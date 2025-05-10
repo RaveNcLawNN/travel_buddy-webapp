@@ -1,9 +1,22 @@
-/* Entry Point */
+import { initNavigationBar } from './navigation-bar.js';
+import { loadHome } from './home.js';
 
+window.addEventListener('hashchange', route);
 
-const button = document.createElement('button')
-button.type = 'button';
-button.className = 'btn btn-primary';
-button.textContent = "Button!";
+function route() {
+    const view = (location.hash.replace('#', '').trim().toLowerCase()) || 'home';
 
-document.getElementById('app').appendChild(button);
+    switch (view) {
+        case 'home':
+            loadHome();
+            break;
+        // other views can be put here later
+        default:
+            loadHome();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initNavigationBar();
+    route();
+});
