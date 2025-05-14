@@ -1,4 +1,5 @@
 import { initNavigationBar } from './navigation-bar.js';
+import { initFooterBar } from './footer.js';
 import { loadHome } from './home.js';
 
 window.addEventListener('hashchange', route);
@@ -18,5 +19,6 @@ function route() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initNavigationBar();
+    initFooterBar();
     route();
 });
