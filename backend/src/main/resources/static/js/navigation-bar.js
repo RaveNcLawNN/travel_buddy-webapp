@@ -9,6 +9,9 @@ export function initNavigationBar() {
         console.warn('No #navbar element found. Navigation bar not initialized.');
         return;
     }
+
+    // Reset vom aktuellen Inhalt - noch nicht sicher ob wir das bei der Navigation Bar brauchen, weil die ist ja bei jeder View da.
+    app.innerHTML = '';
     
     // <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     const nav = document.createElement('nav');
