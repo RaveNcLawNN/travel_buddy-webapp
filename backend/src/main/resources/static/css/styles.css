@@ -1,0 +1,9 @@
+/* Wir importieren die CSS für jeden View in styles.css und importieren dann das ganze in HTML */
+
+/* 1. view specific */
+@import 'home.css';
+@import 'trips.css';
+
+/* 2. layout specific */
+@import 'navbar.css';
+@import 'footer.css';

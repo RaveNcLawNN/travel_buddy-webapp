@@ -1,22 +1,14 @@
 import { initNavigationBar } from './navigation-bar.js';
+import { route } from './router.js';
+import { initFooterBar } from './footer.js';
 import { loadHome } from './home.js';
 
+// damit auf die URL-Änderungen reagiert wird
 window.addEventListener('hashchange', route);
 
-function route() {
-    const view = (location.hash.replace('#', '').trim().toLowerCase()) || 'home';
-
-    switch (view) {
-        case 'home':
-            loadHome();
-            break;
-        // other views can be put here later
-        default:
-            loadHome();
-    }
-}
-
+// Initialisierung beim loaden der Website
 document.addEventListener('DOMContentLoaded', () => {
     initNavigationBar();
+    initFooterBar();
     route();
 });
