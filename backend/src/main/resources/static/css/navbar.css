@@ -1,4 +1,9 @@
-.navbar .nav-link.active {
-    font-weight: bold;
-    text-decoration: underline;
+.navbar {
+    min-height: 8vh;
+    background-color: #2564ac !important;
+}
+
+.nav-link.active {
+    font-weight: bold !important;
+    text-decoration: underline !important;
 }

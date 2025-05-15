@@ -13,7 +13,7 @@ export function initFooterBar() {
 
     const text = document.createElement('span');
     text.className = 'navbar-text text-light';
-    text.textContent = '© 2025 Travel Buddy - All rights reserved';
+    text.textContent = '© 2025 Travel Buddy - All rights reserved :)';
 
     container.appendChild(text);
     footerElement.appendChild(container);

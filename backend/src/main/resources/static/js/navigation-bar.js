@@ -23,7 +23,7 @@ export function initNavigationBar() {
 
     // Link: TravelApp (führt zur Landing Page)
     const travelapp = document.createElement('a');
-    travelapp.className = 'navbar-brand';
+    travelapp.className = 'navbar-brand ms-5';
     travelapp.href = '#home';
     travelapp.textContent = 'TravelApp';
 
@@ -75,7 +75,7 @@ export function initNavigationBar() {
 
     // Login-Button (öffnet später Login/Registrierung)
     const loginBtn = document.createElement('button');
-    loginBtn.className = 'btn btn-outline-light';
+    loginBtn.className = 'btn btn-outline-light me-5';
     loginBtn.id = 'loginBtn';
     loginBtn.type = 'button';
     loginBtn.textContent = 'Login / Create Account';

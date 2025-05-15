@@ -6,22 +6,29 @@ export function loadHome() {
     }
 
     app.replaceChildren();
+    app.className = '';
 
-    app.className = 'bg-home d-flex flex-column align-items-center justify-content-center text-center';
+    const heroSection = document.createElement('section');
+    heroSection.className = 'hero-section';
+
+    const heroContent = document.createElement('div');
+    heroContent.className = 'container';
 
     const heading = document.createElement('h1');
-    heading.className = 'mt-5 text-shadow';
+    heading.className = 'display-4 text-shadow text-bold text-more-space';
     heading.textContent = 'Welcome to Travel Buddy';
 
     const lead = document.createElement('p');
-    lead.className = 'lead text-shadow';
+    lead.className = 'lead text-shadow text-bold text-more-space';
     lead.textContent = 'Plan trips, track adventures, and find your perfect destination.';
 
+    const formWrapper = document.createElement('div');
+    formWrapper.className = 'search-form-overlay';
+
     const form = document.createElement('form');
-    form.className = 'w-50';
 
     const inputGroup = document.createElement('div');
-    inputGroup.className = 'input-group mb-3';
+    inputGroup.className = 'input-group';
 
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
@@ -38,9 +45,15 @@ export function loadHome() {
     inputGroup.appendChild(searchInput);
     inputGroup.appendChild(searchButton);
     form.appendChild(inputGroup);
+    formWrapper.appendChild(form);
+
+    heroContent.appendChild(heading);
+    heroContent.appendChild(lead);
+    heroContent.appendChild(formWrapper);
+    heroSection.appendChild(heroContent);
 
     const resultsContainer = document.createElement('div');
-    resultsContainer.className = 'mt-4 search-results';
+    resultsContainer.className = 'container mt-5 search-results search-result-home';
     resultsContainer.id = 'searchResults';
 
     const sampleCities = [
@@ -87,8 +100,6 @@ export function loadHome() {
         }
     });
 
-    app.appendChild(heading);
-    app.appendChild(lead);
-    app.appendChild(form);
+    app.appendChild(heroSection);
     app.appendChild(resultsContainer);
 }
