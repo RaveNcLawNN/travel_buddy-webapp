@@ -3,8 +3,6 @@
  */
 
 export function loadTrips(page = 1) {
-    const currentPage = page;
-
     const app = document.getElementById('app');
     if (!app) {
         console.warn('No #app element found. Trips view not loaded.');
@@ -12,83 +10,84 @@ export function loadTrips(page = 1) {
     }
 
     // Reset vom vorherigen View, es wird der View resetet aber nicht die navbar
-    app.innerHTML = '';
+    app.replaceChildren();
+    // neue Klasse für den Trips-View
+    app.className = 'trip-view';
+
 
     // Platzhalter für dynamische Trips mit dummy Trips
     const userTrips = [
-        { id: 1, name: 'Bratislava Zerfetzung' },
-        { id: 2, name: 'Wien Zerfetzung' },
-        { id: 3, name: 'Wolfsthal Zerfetzung' },
-        { id: 4, name: 'Test1' },
-        { id: 5, name: 'Test2' },
-        { id: 6, name: 'Test3' },
-        { id: 7, name: 'Test4' },
-        { id: 8, name: 'Test5' },
+        { id: 1, name: 'Bratislava Zerfetzung', from: '01-06-2025', to: '05-06-2025' },
+        { id: 2, name: 'Wien Zerfetzung', from: '10-07-2025', to: '15-07-2025' },
+        { id: 3, name: 'Wolfsthal Zerfetzung', from: '01-08-2025', to: '03-08-2025' },
+        { id: 4, name: 'Test1', from: '01-09-2025', to: '07-09-2025' },
+        { id: 5, name: 'Test2', from: '10-10-2025', to: '20-10-2025' },
+        { id: 6, name: 'Test3', from: '05-11-2025', to: '12-11-2025' },
+        { id: 7, name: 'Test4', from: '01-12-2025', to: '08-12-2025' },
+        { id: 8, name: 'Test5', from: '15-01-2025', to: '22-01-2025' },
     ];
 
     const tripsPerPage = 5;
     const totalPages = Math.ceil(userTrips.length / tripsPerPage);
+    const startIndex = (page - 1) * tripsPerPage;
+    const pageTrips = userTrips.slice(startIndex, startIndex + tripsPerPage);
 
-
-    // Container für die Buttons
+    // Container für alles
     const container = document.createElement('div');
-    container.className = 'd-flex flex-column justify-content-between align-items-center px-3';
-    container.style.minHeight = '100vh';
-    container.style.paddingTop = '50px';        // fixer abstand oben
-    container.style.paddingBottom = '60px';     // fixer abstand unten
+    container.className = 'container-fluid py-5 d-flex flex-column align-items-center'
 
     // Überschrift
     const heading = document.createElement('h2');
     heading.textContent = 'My Trips';
-    heading.className = 'text-center mb-2';
-    app.appendChild(heading);
+    heading.className = 'display-5 fw-bold text-center mb-spacing';
+    container.appendChild(heading);
 
-    // Wrapper für die Buttons
-    const buttonWrapper = document.createElement('div');
-    buttonWrapper.className = 'd-flex flex-column align-items-center w-100 flex-grow-1 justify-content-between';
-
-    // Logik damit max 5 pro Seite angezeigt werden
-    const startIndex = (currentPage - 1) * tripsPerPage;
-    const pageTrips = userTrips.slice(startIndex, startIndex + tripsPerPage);
+    // Trip-Buttons
+    const list = document.createElement('div');
+    list.className = 'trip-list d-flex flex-column align-items-center w-100 gap-3';
+    container.appendChild(list);
 
     pageTrips.forEach(trip => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'd-flex align-items-center justify-content-center flex-grow-1 w-100';
-        wrapper.style.maxWidth = '800px';
+        // Button als Karte
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'trip-card btn btn-outline-dark w-100 py-5';
 
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-outline-dark w-100 fs-5 py-3';
-        btn.textContent = trip.name;
+        // Titel
+        const title = document.createElement('h4');
+        title.className = 'mb-1';
+        title.textContent = trip.name;
+        card.appendChild(title);
 
-        btn.addEventListener('click', () => {
+        // Datum
+        const date = document.createElement('small');
+        date.textContent = `${trip.from} - ${trip.to}`;
+        card.appendChild(date);
+
+        // Klick-Handler
+        card.addEventListener('click', () => {
             alert(`Trip "${trip.name}" clicked - später Detailseite`);
         });
 
-        wrapper.appendChild(btn);
-        buttonWrapper.appendChild(wrapper);
+        list.appendChild(card);
     });
-
-    container.appendChild(buttonWrapper);
 
     // Pagination, also die Aufteilung auf die Pages
     if (totalPages > 1) {
         const pagination = document.createElement('div');
-        pagination.className = 'd-flex justify-content-center mt-4 gap-2 flex-wrap';
+        pagination.className = 'd-flex justify-content-center gap-2 mt-3 flex-wrap';
+        container.appendChild(pagination);
 
         for (let i = 1; i <= totalPages; i++) {
             const pageBtn = document.createElement('button');
-            pageBtn.className = `btn ${i === currentPage ? 'btn-dark' : 'btn-outline-dark'} px-3`;
+            pageBtn.className = `btn ${i === page ? 'btn-dark' : 'btn-outline-dark'} px-3`;
             pageBtn.textContent = i;
 
             pageBtn.addEventListener('click', () => {
                 loadTrips(i);
             });
-
             pagination.appendChild(pageBtn);
         }
-
-        container.appendChild(pagination);
     }
-
     app.appendChild(container);
 }

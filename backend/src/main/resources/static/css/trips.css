@@ -1,0 +1,50 @@
+/* trips.css */
+
+:root {
+    --tb-spacing: 3rem;
+}
+
+.trip-view {
+    min-height: 100vh;
+    padding: var(--tb-spacing) 1rem;
+    background-color: #fff;
+}
+
+.mb-spacing {
+    margin-bottom: var(--tb-spacing);
+}
+
+.trip-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.trip-card {
+    max-width: 800px;
+    width: 100%;
+    padding: 3rem 1.5rem;
+    background: #fff;
+    border: 2px solid #343a40;
+    border-radius: .5rem;
+    text-align: center;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.trip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+}
+
+.trip-card h4 {
+    font-size: 1.75rem;
+    margin-bottom: .5rem;
+}
+
+.trip-card small {
+    font-size: 1rem;
+    color: #666;
+    display: block;
+    margin-top: .25rem;
+}
