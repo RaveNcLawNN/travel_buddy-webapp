@@ -3,7 +3,6 @@ package com.travelbuddy.travelbuddy.controller;
 import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.service.UserService;
 import com.travelbuddy.travelbuddy.dto.UserRegistrationDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +23,6 @@ public class UserController {
      * Constructor-based dependency injection for UserService.
      * @param userService the service for user business logic
      */
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }

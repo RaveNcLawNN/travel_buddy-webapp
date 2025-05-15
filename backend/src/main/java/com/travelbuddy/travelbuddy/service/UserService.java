@@ -2,7 +2,6 @@ package com.travelbuddy.travelbuddy.service;
 
 import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,7 +19,6 @@ public class UserService {
      * Constructor-based dependency injection for UserRepository.
      * @param userRepository the repository for user data access
      */
-    @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

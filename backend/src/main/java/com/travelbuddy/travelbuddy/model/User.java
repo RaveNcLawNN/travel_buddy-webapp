@@ -1,8 +1,6 @@
 package com.travelbuddy.travelbuddy.model;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Represents a user in the TravelBuddy application.
