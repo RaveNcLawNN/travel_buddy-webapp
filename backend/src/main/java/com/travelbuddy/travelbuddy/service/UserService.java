@@ -68,4 +68,13 @@ public class UserService {
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    /**
+     * Finds a user by their ID.
+     * @param id the user ID
+     * @return an Optional containing the found user, or empty if not found
+     */
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
 } 

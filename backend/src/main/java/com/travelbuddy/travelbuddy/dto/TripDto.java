@@ -1,87 +1,46 @@
 package com.travelbuddy.travelbuddy.dto;
 
 import com.travelbuddy.travelbuddy.model.TripStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
 import java.time.LocalDate;
 
 /**
  * Data Transfer Object for trip information.
  * Used for transferring trip data between client and server.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class TripDto {
     private Long id;
+
+    @NotBlank(message = "Title is required")
+    @Size(max = 100, message = "Title must be less than 100 characters")
     private String title;
+
+    @Size(max = 1000, message = "Description must be less than 1000 characters")
     private String description;
+
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
+
+    @NotNull(message = "End date is required")
     private LocalDate endDate;
+
+    @NotBlank(message = "Destination is required")
+    @Size(max = 100, message = "Destination must be less than 100 characters")
     private String destination;
+
+    @NotNull(message = "Organizer ID is required")
     private Long organizerId;
+
     private TripStatus status;
-
-    // Default constructor
-    public TripDto() {}
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public Long getOrganizerId() {
-        return organizerId;
-    }
-
-    public void setOrganizerId(Long organizerId) {
-        this.organizerId = organizerId;
-    }
-
-    public TripStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TripStatus status) {
-        this.status = status;
-    }
 } 

@@ -6,6 +6,8 @@ import com.travelbuddy.travelbuddy.model.TripStatus;
 import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.service.TripService;
 import com.travelbuddy.travelbuddy.service.UserService;
+import com.travelbuddy.travelbuddy.mapper.TripMapper;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +26,12 @@ public class TripController {
 
     private final TripService tripService;
     private final UserService userService;
+    private final TripMapper tripMapper;
 
-    public TripController(TripService tripService, UserService userService) {
+    public TripController(TripService tripService, UserService userService, TripMapper tripMapper) {
         this.tripService = tripService;
         this.userService = userService;
+        this.tripMapper = tripMapper;
     }
 
     /**
@@ -36,23 +40,18 @@ public class TripController {
      * @return the created trip
      */
     @PostMapping
-    public ResponseEntity<?> createTrip(@RequestBody TripDto tripDto) {
-        Optional<User> organizerOpt = userService.findByUsername(tripDto.getOrganizerId().toString());
+    public ResponseEntity<?> createTrip(@Valid @RequestBody TripDto tripDto) {
+        Optional<User> organizerOpt = userService.findById(tripDto.getOrganizerId());
         if (organizerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Organizer not found");
         }
 
-        Trip trip = new Trip(
-            tripDto.getTitle(),
-            tripDto.getDescription(),
-            tripDto.getStartDate(),
-            tripDto.getEndDate(),
-            tripDto.getDestination(),
-            organizerOpt.get()
-        );
+        Trip trip = tripMapper.toEntity(tripDto);
+        trip.setOrganizer(organizerOpt.get());
+        trip.addParticipant(organizerOpt.get());
 
         Trip savedTrip = tripService.createTrip(trip);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedTrip);
+        return ResponseEntity.status(HttpStatus.CREATED).body(tripMapper.toDto(savedTrip));
     }
 
     /**
@@ -64,7 +63,7 @@ public class TripController {
     public ResponseEntity<?> getTrip(@PathVariable Long id) {
         Optional<Trip> tripOpt = tripService.findById(id);
         if (tripOpt.isPresent()) {
-            return ResponseEntity.ok(tripOpt.get());
+            return ResponseEntity.ok(tripMapper.toDto(tripOpt.get()));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
     }
@@ -77,7 +76,7 @@ public class TripController {
     @GetMapping("/organizer/{organizerId}")
     public ResponseEntity<?> getTripsByOrganizer(@PathVariable Long organizerId) {
         List<Trip> trips = tripService.findByOrganizer(organizerId);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(trips.stream().map(tripMapper::toDto).toList());
     }
 
     /**
@@ -88,7 +87,7 @@ public class TripController {
     @GetMapping("/participant/{userId}")
     public ResponseEntity<?> getTripsByParticipant(@PathVariable Long userId) {
         List<Trip> trips = tripService.findByParticipant(userId);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(trips.stream().map(tripMapper::toDto).toList());
     }
 
     /**
@@ -99,7 +98,7 @@ public class TripController {
     @GetMapping("/status/{status}")
     public ResponseEntity<?> getTripsByStatus(@PathVariable TripStatus status) {
         List<Trip> trips = tripService.findByStatus(status);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(trips.stream().map(tripMapper::toDto).toList());
     }
 
     /**
@@ -113,7 +112,7 @@ public class TripController {
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
         List<Trip> trips = tripService.findTripsBetweenDates(startDate, endDate);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(trips.stream().map(tripMapper::toDto).toList());
     }
 
     /**
@@ -124,7 +123,7 @@ public class TripController {
     @GetMapping("/destination")
     public ResponseEntity<?> getTripsByDestination(@RequestParam String destination) {
         List<Trip> trips = tripService.findByDestination(destination);
-        return ResponseEntity.ok(trips);
+        return ResponseEntity.ok(trips.stream().map(tripMapper::toDto).toList());
     }
 
     /**
@@ -161,5 +160,11 @@ public class TripController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("Trip or user not found");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTrip(@PathVariable Long id, @Valid @RequestBody TripDto tripDto) {
+        // Implementation of updateTrip method
+        return null; // Placeholder return, actual implementation needed
     }
 } 

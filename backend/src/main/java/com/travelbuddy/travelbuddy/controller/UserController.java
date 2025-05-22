@@ -2,7 +2,9 @@ package com.travelbuddy.travelbuddy.controller;
 
 import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.service.UserService;
-import com.travelbuddy.travelbuddy.dto.UserRegistrationDto;
+import com.travelbuddy.travelbuddy.dto.UserDto;
+import com.travelbuddy.travelbuddy.mapper.UserMapper;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,36 +20,35 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     /**
-     * Constructor-based dependency injection for UserService.
+     * Constructor-based dependency injection for UserService and UserMapper.
      * @param userService the service for user business logic
+     * @param userMapper the mapper for converting DTOs to entities
      */
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     /**
      * Registers a new user.
      *
-     * @param registrationDto the registration data (username, email, password)
+     * @param userDto the registration data (username, email, password)
      * @return HTTP 201 Created if successful, 400 Bad Request if username/email exists
      */
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto userDto) {
         // Check if username or email already exists
-        if (userService.existsByUsername(registrationDto.getUsername())) {
+        if (userService.existsByUsername(userDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username already exists");
         }
-        if (userService.existsByEmail(registrationDto.getEmail())) {
+        if (userService.existsByEmail(userDto.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
         }
         // Map DTO to User entity
-        User user = new User(
-            registrationDto.getUsername(),
-            registrationDto.getEmail(),
-            registrationDto.getPassword() // In production, hash the password!
-        );
+        User user = userMapper.toEntity(userDto);
         User savedUser = userService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
