@@ -61,9 +61,9 @@ export function loadHome() {
         "Barcelona", "Amsterdam", "Rome", "Cape Town", "Toronto", "Dubai", "Vienna"
     ];
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const query = searchInput.value.trim().toLowerCase();
+        const query = searchInput.value.trim();
         resultsContainer.replaceChildren();
 
         if (!query) {
@@ -73,33 +73,41 @@ export function loadHome() {
             return;
         }
 
-        const matches = sampleCities.filter(city => city.toLowerCase().includes(query));
-
-        if (matches.length > 0) {
-            const list = document.createElement('ul');
-            list.className = 'list-group';
-
-            matches.forEach(city => {
-                const item = document.createElement('li');
-                item.className = 'list-group-item list-group-item-action';
-                item.textContent = city;
-                item.style.cursor = 'pointer';
-
-                item.addEventListener('click', () => {
-                    alert(`You selected: ${city}`);
-                });
-
-                list.appendChild(item);
-            });
-
-            resultsContainer.appendChild(list);
-        } else {
-            const noResult = document.createElement('p');
-            noResult.textContent = `No cities found matching "${query}".`;
-            resultsContainer.appendChild(noResult);
+        // Call backend for geocoding
+        try {
+            const response = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
+            const locations = await response.json();
+            if (locations.length > 0) {
+                const loc = locations[0];
+                // Center map and add marker
+                map.setView([loc.latitude, loc.longitude], 13);
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([loc.latitude, loc.longitude]).addTo(map)
+                    .bindPopup(loc.displayName).openPopup();
+            } else {
+                const noResult = document.createElement('p');
+                noResult.textContent = `No locations found matching "${query}".`;
+                resultsContainer.appendChild(noResult);
+            }
+        } catch (err) {
+            resultsContainer.textContent = 'Error fetching location.';
         }
     });
 
     app.appendChild(heroSection);
     app.appendChild(resultsContainer);
+
+    // Add Leaflet map container
+    const mapContainer = document.createElement('div');
+    mapContainer.id = 'map';
+    mapContainer.style.height = '400px';
+    mapContainer.style.margin = '2rem 0';
+    app.appendChild(mapContainer);
+
+    // Initialize the Leaflet map
+    let map = L.map('map').setView([20, 0], 2); // World view
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    let marker; // To store the current marker
 }
