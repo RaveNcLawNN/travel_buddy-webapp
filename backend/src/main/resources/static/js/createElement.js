@@ -3,6 +3,8 @@ export function createElement(tag, attributes = {}, ...children) {
   Object.entries(attributes).forEach(([key, value]) => {
     if (key === 'className') {
       element.className = value;
+    } else if (key === 'form') {
+      element.setAttribute('form', value);
     } else if (key in element) {
       element[key] = value;
     } else {

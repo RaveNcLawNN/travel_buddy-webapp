@@ -1,93 +1,183 @@
+import { createElement } from "./createElement.js";
+import { getAllTrips, addTrip } from './tripStore.js';
+
 /*
  * Lädt den "My Trips" View für logged-in Nutzer
  */
 
+// Platzhalter für dynamische Trips mit dummy Trips
+const userTrips = getAllTrips();
+
+function openTripModal(onCreate) {
+    const modalId = 'tripModal';
+
+    document.getElementById(modalId)?.remove();
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style = '';
+
+
+    const modal = createElement('div', {
+        className: 'modal fade',
+        id: modalId,
+        tabindex: '-1',
+        role: 'dialog'
+    },
+        createElement('div', { className: 'modal-dialog', role: 'document' },
+            createElement('div', { className: 'modal-content' },
+                createElement('div', { className: 'modal-header' },
+                    createElement('h5', { className: 'modal-title' }, 'Create New Trip'),
+                    createElement('button', {
+                        type: 'button',
+                        className: 'btn-close',
+                        'data-bs-dismiss': 'modal',
+                        'aria-label': 'Close'
+                    })
+                ),
+                createElement('div', { className: 'modal-body' },
+                    createElement('form', { id: 'tripForm', className: 'd-flex flex-column gap-2' },
+                        createElement('input', { className: 'form-control', id: 'tripName', placeholder: 'Trip Name', required: true }),
+                        createElement('input', { className: 'form-control', id: 'tripLocation', placeholder: 'Location', required: true }),
+                        createElement('input', { type: 'date', className: 'form-control', id: 'tripFrom', required: true }),
+                        createElement('input', { type: 'date', className: 'form-control', id: 'tripTo', required: true }),
+                        createElement('div', { className: 'modal-footer' },
+                            createElement('button', {
+                                type: 'button',
+                                className: 'btn btn-secondary',
+                                'data-bs-dismiss': 'modal'
+                            }, 'Cancel'),
+                            createElement('button', {
+                                type: 'submit',
+                                className: 'btn btn-primary',
+                                form: 'tripForm'
+                            }, 'Create')
+                        )
+                    )
+                )
+            )
+        )
+    );
+
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+
+    modal.addEventListener('hidden.bs.modal', () => {
+        console.log('hidden.bs.modal wurde ausgelöst')
+        bsModal.dispose();
+        modal.remove();
+        loadTrips();
+    },
+    { once: true }
+);
+
+    modal.querySelector('#tripForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = modal.querySelector('#tripName').value.trim();
+        const location = modal.querySelector('#tripLocation').value.trim();
+        const from = modal.querySelector('#tripFrom').value;
+        const to = modal.querySelector('#tripTo').value;
+
+        if (!name || !location || !from || !to) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        const newTrip = {
+            id: Date.now(),
+            name: `${name} (${location})`,
+            from: from,
+            to: to
+        };
+        
+        onCreate?.(newTrip);
+        document.activeElement?.blur();
+
+        bsModal.hide();
+    });
+
+    bsModal.show();
+}
+                    
+
 export function loadTrips(page = 1) {
     const app = document.getElementById('app');
-    if (!app) {
-        console.warn('No #app element found. Trips view not loaded.');
-        return;
-    }
+    if (!app) return;
 
     // Reset vom vorherigen View, es wird der View resetet aber nicht die navbar
     app.replaceChildren();
     // neue Klasse für den Trips-View
     app.className = 'trip-view';
-
-
-    // Platzhalter für dynamische Trips mit dummy Trips
-    const userTrips = [
-        { id: 1, name: 'Bratislava Zerfetzung', from: '01-06-2025', to: '05-06-2025' },
-        { id: 2, name: 'Wien Zerfetzung', from: '10-07-2025', to: '15-07-2025' },
-        { id: 3, name: 'Wolfsthal Zerfetzung', from: '01-08-2025', to: '03-08-2025' },
-        { id: 4, name: 'Test1', from: '01-09-2025', to: '07-09-2025' },
-        { id: 5, name: 'Test2', from: '10-10-2025', to: '20-10-2025' },
-        { id: 6, name: 'Test3', from: '05-11-2025', to: '12-11-2025' },
-        { id: 7, name: 'Test4', from: '01-12-2025', to: '08-12-2025' },
-        { id: 8, name: 'Test5', from: '15-01-2025', to: '22-01-2025' },
-    ];
-
+    
+    const userTrips = getAllTrips();
     const tripsPerPage = 5;
     const totalPages = Math.ceil(userTrips.length / tripsPerPage);
     const startIndex = (page - 1) * tripsPerPage;
     const pageTrips = userTrips.slice(startIndex, startIndex + tripsPerPage);
 
     // Container für alles
-    const container = document.createElement('div');
-    container.className = 'container-fluid py-5 d-flex flex-column align-items-center'
+    const container = createElement('div', {
+        className: 'container-fluid py-5 d-flex flex-column align-items-center'
+    });
 
     // Überschrift
-    const heading = document.createElement('h2');
-    heading.textContent = 'My Trips';
-    heading.className = 'display-5 fw-bold text-center mb-spacing';
-    container.appendChild(heading);
+    const heading = createElement('h2', {
+        className: 'display-5 fw-bold text-center mb-spacing'
+    }, 'My Trips');
+
+    const newTripBtn = createElement('button', {
+        className: 'btn btn-success mb-4'
+    }, '+');
+
+    newTripBtn.addEventListener('click', () => {
+        openTripModal((newTrip) => {
+            addTrip(newTrip);
+        });
+    });
 
     // Trip-Buttons
-    const list = document.createElement('div');
-    list.className = 'trip-list d-flex flex-column align-items-center w-100 gap-3';
+    const list = createElement('div', {
+        className: 'trip-list d-flex flex-column align-items-center w-100 gap-3'
+    });
+
+    container.appendChild(heading);
+    container.appendChild(newTripBtn);
     container.appendChild(list);
 
     pageTrips.forEach(trip => {
-        // Button als Karte
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'trip-card btn btn-outline-dark w-100 py-5';
+        const card = createElement('button', {
+            type: 'button',
+            className: 'trip-card btn btn-outline-dark w-100 py-5'
+        },
+            createElement('h4', { className: 'mb-1' }, trip.name),
+            createElement('small', {}, `${trip.from} - ${trip.to}`)
+        );
 
-        // Titel
-        const title = document.createElement('h4');
-        title.className = 'mb-1';
-        title.textContent = trip.name;
-        card.appendChild(title);
-
-        // Datum
-        const date = document.createElement('small');
-        date.textContent = `${trip.from} - ${trip.to}`;
-        card.appendChild(date);
-
-        // Klick-Handler
         card.addEventListener('click', () => {
-            alert(`Trip "${trip.name}" clicked - später Detailseite`);
+            window.location.hash = `trip/${trip.id}`;
         });
 
         list.appendChild(card);
     });
 
-    // Pagination, also die Aufteilung auf die Pages
-    if (totalPages > 1) {
-        const pagination = document.createElement('div');
-        pagination.className = 'd-flex justify-content-center gap-2 mt-3 flex-wrap';
-        container.appendChild(pagination);
+    if (userTrips.length > tripsPerPage) {
+        const pagination = createElement('div', {
+            className: 'd-flex justify-content-center gap-2 mt-3 flex-wrap'
+        });
 
         for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.className = `btn ${i === page ? 'btn-dark' : 'btn-outline-dark'} px-3`;
-            pageBtn.textContent = i;
+            const pageBtn = createElement('button', {
+                className: `btn ${i === page ? 'btn-dark' : 'btn-outline-dark'} px-3`
+            }, i.toString());
 
             pageBtn.addEventListener('click', () => {
                 loadTrips(i);
             });
+
             pagination.appendChild(pageBtn);
         }
+
+        container.appendChild(pagination);
     }
+
     app.appendChild(container);
 }

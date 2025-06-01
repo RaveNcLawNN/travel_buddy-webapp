@@ -54,6 +54,12 @@ export async function loadHome() {
         marker = L.marker([loc.latitude, loc.longitude]).addTo(map)
           .bindPopup(loc.displayName)
           .openPopup();
+
+
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+          mapElement.scrollIntoView({ behavior: 'smooth', block: 'center'});
+        }
       } else {
         alert(`No locations found matching "${query}".`);
       }
