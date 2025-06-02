@@ -147,4 +147,9 @@ public class TripService {
         }
         return false;
     }
+
+    @Transactional
+    public void deleteTrip(Trip trip) {
+        tripRepository.delete(trip);
+    }
 } 
