@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Service for querying points of interest using Overpass API.
@@ -37,20 +41,30 @@ public class OverpassService {
             List<String> amenityTypes) {
         
         StringBuilder query = new StringBuilder();
+        // Map amenity types to their correct Overpass tags
+        Map<String, String[]> typeToTag = new HashMap<>();
+        typeToTag.put("museum", new String[]{"tourism", "museum"});
+        typeToTag.put("attraction", new String[]{"tourism", "attraction"});
+        typeToTag.put("hotel", new String[]{"tourism", "hotel"});
+        typeToTag.put("theatre", new String[]{"amenity", "theatre"});
+
         query.append("[out:json][timeout:25];(");
-        
         for (String amenity : amenityTypes) {
-            query.append(String.format(
-                "node[\"amenity\"=\"%s\"](around:%d,%f,%f);",
-                amenity, radiusInMeters, latitude, longitude
-            ));
+            String[] tag = typeToTag.get(amenity);
+            if (tag != null) {
+                query.append(String.format(Locale.US,
+                    "node[\"%s\"=\"%s\"](around:%d,%f,%f);",
+                    tag[0], tag[1], radiusInMeters, latitude, longitude
+                ));
+            }
         }
-        
         query.append(");out body;>;out skel qt;");
 
+        System.out.println("Overpass QL query:\n" + query);
         return webClient.post()
                 .uri(OVERPASS_API_URL)
-                .bodyValue(query.toString())
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(BodyInserters.fromFormData("data", query.toString()))
                 .retrieve()
                 .bodyToMono(String.class)
                 .map(response -> {
@@ -61,13 +75,19 @@ public class OverpassService {
                         root.get("elements").forEach(node -> {
                             if (node.has("tags")) {
                                 JsonNode tags = node.get("tags");
+                                String name = tags.has("name") ? tags.get("name").asText("Unnamed") : "Unnamed";
+                                String type = tags.has("amenity") ? tags.get("amenity").asText("") :
+                                              tags.has("tourism") ? tags.get("tourism").asText("") : "";
+                                type = capitalize(type);
+                                String website = tags.has("website") ? tags.get("website").asText(null) : null;
+                                String phone = tags.has("phone") ? tags.get("phone").asText(null) : null;
                                 PointOfInterest poi = new PointOfInterest(
-                                    tags.get("name").asText("Unnamed"),
+                                    name,
                                     node.get("lat").asDouble(),
                                     node.get("lon").asDouble(),
-                                    tags.get("amenity").asText(),
-                                    tags.get("website").asText(null),
-                                    tags.get("phone").asText(null)
+                                    type,
+                                    website,
+                                    phone
                                 );
                                 pois.add(poi);
                             }
@@ -79,6 +99,12 @@ public class OverpassService {
                     }
                 })
                 .block();
+    }
+
+    // Capitalize the first letter of the type
+    private static String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
     /**
