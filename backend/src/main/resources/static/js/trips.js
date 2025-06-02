@@ -1,183 +1,189 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from "./createElement.js";
-import { getAllTrips, addTrip } from './tripStore.js';
+import { getAllTrips, createTrip } from "./api.js";
 
-/*
- * Lädt den "My Trips" View für logged-in Nutzer
- */
+//=============================================
+// MAIN ENTRY POINT: VIEW RENDERER
+//=============================================
 
-// Platzhalter für dynamische Trips mit dummy Trips
-const userTrips = getAllTrips();
-
-function openTripModal(onCreate) {
-    const modalId = 'tripModal';
-
-    document.getElementById(modalId)?.remove();
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style = '';
-
-
-    const modal = createElement('div', {
-        className: 'modal fade',
-        id: modalId,
-        tabindex: '-1',
-        role: 'dialog'
-    },
-        createElement('div', { className: 'modal-dialog', role: 'document' },
-            createElement('div', { className: 'modal-content' },
-                createElement('div', { className: 'modal-header' },
-                    createElement('h5', { className: 'modal-title' }, 'Create New Trip'),
-                    createElement('button', {
-                        type: 'button',
-                        className: 'btn-close',
-                        'data-bs-dismiss': 'modal',
-                        'aria-label': 'Close'
-                    })
-                ),
-                createElement('div', { className: 'modal-body' },
-                    createElement('form', { id: 'tripForm', className: 'd-flex flex-column gap-2' },
-                        createElement('input', { className: 'form-control', id: 'tripName', placeholder: 'Trip Name', required: true }),
-                        createElement('input', { className: 'form-control', id: 'tripLocation', placeholder: 'Location', required: true }),
-                        createElement('input', { type: 'date', className: 'form-control', id: 'tripFrom', required: true }),
-                        createElement('input', { type: 'date', className: 'form-control', id: 'tripTo', required: true }),
-                        createElement('div', { className: 'modal-footer' },
-                            createElement('button', {
-                                type: 'button',
-                                className: 'btn btn-secondary',
-                                'data-bs-dismiss': 'modal'
-                            }, 'Cancel'),
-                            createElement('button', {
-                                type: 'submit',
-                                className: 'btn btn-primary',
-                                form: 'tripForm'
-                            }, 'Create')
-                        )
-                    )
-                )
-            )
-        )
-    );
-
-    document.body.appendChild(modal);
-    const bsModal = new bootstrap.Modal(modal);
-
-    modal.addEventListener('hidden.bs.modal', () => {
-        console.log('hidden.bs.modal wurde ausgelöst')
-        bsModal.dispose();
-        modal.remove();
-        loadTrips();
-    },
-    { once: true }
-);
-
-    modal.querySelector('#tripForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = modal.querySelector('#tripName').value.trim();
-        const location = modal.querySelector('#tripLocation').value.trim();
-        const from = modal.querySelector('#tripFrom').value;
-        const to = modal.querySelector('#tripTo').value;
-
-        if (!name || !location || !from || !to) {
-            alert('Please fill in all fields.');
-            return;
-        }
-
-        const newTrip = {
-            id: Date.now(),
-            name: `${name} (${location})`,
-            from: from,
-            to: to
-        };
-        
-        onCreate?.(newTrip);
-        document.activeElement?.blur();
-
-        bsModal.hide();
-    });
-
-    bsModal.show();
-}
-                    
-
-export function loadTrips(page = 1) {
+export async function loadTrips(page = 1) {
     const app = document.getElementById('app');
     if (!app) return;
 
-    // Reset vom vorherigen View, es wird der View resetet aber nicht die navbar
     app.replaceChildren();
-    // neue Klasse für den Trips-View
     app.className = 'trip-view';
     
-    const userTrips = getAllTrips();
+    // Layout: Header + Button
+    const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
+    const heading = createElement("h2", { className: "display-5 fw-bold text-center mb-spacing" }, "My Trips");
+    const newTripBtn = createElement("button", { className: "btn btn-success mb-4" }, "+");
+    container.append(heading, newTripBtn);
+
+    // Trip List
+    const list = createElement("div", { className: "trip-list d-flex flex-column align-items-center w-100 gap-3" });
+    container.appendChild(list);
+    app.appendChild(container);
+
+    // Modal Handler: Trip Creation
+    newTripBtn.addEventListener("click", () => {
+    openTripModal(async (newTrip) => {
+      const payload = {
+        title: newTrip.title,
+        description: newTrip.description || "",
+        startDate: newTrip.from,
+        endDate: newTrip.to,
+        destination: newTrip.destination,
+        organizerId: 1, // TODO: mit echten ID's ersetzen sobald Session Handling da ist
+        status: "PLANNING",
+      };
+      try {
+        await createTrip(payload);
+        await refreshTripList();
+      } catch (err) {
+        alert("Fehler beim Erstellen des Trips: " + err.message);
+      }
+    });
+  });
+
+  //=============================================
+  // TRIP-CARD LIST RENDERER
+  //=============================================
+
+  async function refreshTripList() {
+    list.replaceChildren();
+    let userTrips = [];
+    try {
+      userTrips = await getAllTrips();
+    } catch (e) {
+      list.appendChild(createElement("p", { className: "text-danger" }, "Fehler beim Laden der Trips."));
+      return;
+    }
+
     const tripsPerPage = 5;
     const totalPages = Math.ceil(userTrips.length / tripsPerPage);
+    page = Math.min(Math.max(page, 1), totalPages);
+
     const startIndex = (page - 1) * tripsPerPage;
     const pageTrips = userTrips.slice(startIndex, startIndex + tripsPerPage);
 
-    // Container für alles
-    const container = createElement('div', {
-        className: 'container-fluid py-5 d-flex flex-column align-items-center'
+    pageTrips.forEach((trip) => {
+      const card = createElement("button", { type: "button", className: "trip-card btn btn-outline-dark w-100 py-5" },
+        createElement("h1", { className: "mb-1" }, trip.title),
+        createElement("small", {}, `${trip.startDate} - ${trip.endDate}`)
+      );
+      card.addEventListener("click", () => {
+        window.location.hash = `trip/${trip.id}`;
+      });
+      list.appendChild(card);
     });
 
-    // Überschrift
-    const heading = createElement('h2', {
-        className: 'display-5 fw-bold text-center mb-spacing'
-    }, 'My Trips');
-
-    const newTripBtn = createElement('button', {
-        className: 'btn btn-success mb-4'
-    }, '+');
-
-    newTripBtn.addEventListener('click', () => {
-        openTripModal((newTrip) => {
-            addTrip(newTrip);
+    // Pagination Controls
+    if (totalPages > 1) {
+      const pagination = createElement("div", { className: "d-flex justify-content-center gap-2 mt-3 flex-wrap" });
+      for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = createElement("button", { className: `btn ${i === page ? "btn-dark" : "btn-outline-dark"} px-3` }, i.toString());
+        pageBtn.addEventListener("click", () => {
+          window.location.hash = `#trips?page=${i}`;
         });
-    });
+        pagination.appendChild(pageBtn);
+      }
+      container.appendChild(pagination);
+    }
+  }
 
-    // Trip-Buttons
-    const list = createElement('div', {
-        className: 'trip-list d-flex flex-column align-items-center w-100 gap-3'
-    });
+  //=============================================
+  // MODAL RENDERER: CREATE TRIP
+  //=============================================
 
-    container.appendChild(heading);
-    container.appendChild(newTripBtn);
-    container.appendChild(list);
+  function openTripModal(onCreate) {
+    document.body.style.overflow = "hidden";
+    const overlay = createElement("div", { id: "tripModal", className: "custom-modal" });
+    const dialog = createElement("div", { className: "custom-modal-dialog" });
 
-    pageTrips.forEach(trip => {
-        const card = createElement('button', {
-            type: 'button',
-            className: 'trip-card btn btn-outline-dark w-100 py-5'
-        },
-            createElement('h4', { className: 'mb-1' }, trip.name),
-            createElement('small', {}, `${trip.from} - ${trip.to}`)
-        );
+    // Modal Header
+    const header = createElement("div", { className: "custom-modal-header d-flex justify-content-between align-items-center" },
+      createElement("h5", { className: "modal-title" }, "Create New Trip"),
+      createElement("button", { type: "button", className: "btn-close", id: "closeModalBtn", "aria-label": "Close" })
+    );
 
-        card.addEventListener('click', () => {
-            window.location.hash = `trip/${trip.id}`;
-        });
+    // Modal Form
+    const body = createElement("div", { className: "custom-modal-body" });
+    const form = createElement("form", { id: "tripForm", className: "d-flex flex-column gap-3" });
 
-        list.appendChild(card);
-    });
+    const titleGroup = createElement("div", { className: "mb-3" },
+      createElement("label", { for: "tripTitle", className: "form-label" }, "Title:"),
+      createElement("input", { type: "text", className: "form-control", id: "tripTitle", required: true })
+    );
 
-    if (userTrips.length > tripsPerPage) {
-        const pagination = createElement('div', {
-            className: 'd-flex justify-content-center gap-2 mt-3 flex-wrap'
-        });
+    const descGroup = createElement("div", { className: "mb-3" },
+      createElement("label", { for: "tripDescription", className: "form-label" }, "Description:"),
+      createElement("textarea", { className: "form-control", id: "tripDescription" })
+    );
+    
+    const destGroup = createElement("div", { className: "mb-3" },
+      createElement("label", { for: "tripDestination", className: "form-label" }, "Destination:"),
+      createElement("input", { type: "text", className: "form-control", id: "tripDestination", required: true })
+    );
 
-        for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = createElement('button', {
-                className: `btn ${i === page ? 'btn-dark' : 'btn-outline-dark'} px-3`
-            }, i.toString());
+    const fromGroup = createElement("div", { className: "mb-3" },
+      createElement("label", { for: "tripFrom", className: "form-label" }, "From:"),
+      createElement("input", { type: "date", className: "form-control", id: "tripFrom", required: true })
+    );
 
-            pageBtn.addEventListener('click', () => {
-                loadTrips(i);
-            });
+    const toGroup = createElement("div", { className: "mb-3" },
+      createElement("label", { for: "tripTo", className: "form-label" }, "To:"),
+      createElement("input", { type: "date", className: "form-control", id: "tripTo", required: true })
+    );
 
-            pagination.appendChild(pageBtn);
-        }
+    const errorDiv = createElement("div", { id: "tripError", className: "text-danger mb-2", style: "display:none;" });
 
-        container.appendChild(pagination);
+    const footer = createElement("div", { className: "custom-modal-footer d-flex justify-content-end gap-2" },
+      createElement("button", { type: "button", className: "btn btn-danger", id: "cancelTripBtn" }, "Cancel"),
+      createElement("button", { type: "submit", className: "btn btn-success" }, "Create")
+    );
+
+    form.append(titleGroup, descGroup, destGroup, fromGroup, toGroup, errorDiv, footer);
+    body.appendChild(form);
+    dialog.append(header, body);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    function closeModal() {
+      overlay.remove();
+      document.body.style.overflow = "";
     }
 
-    app.appendChild(container);
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    document.getElementById("cancelTripBtn").addEventListener("click", closeModal);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("tripTitle").value.trim();
+      const description = document.getElementById("tripDescription").value.trim();
+      const destination = document.getElementById("tripDestination").value.trim();
+      const from = document.getElementById("tripFrom").value;
+      const to = document.getElementById("tripTo").value;
+
+      if (!title || !destination || !from || !to) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "Bitte fülle alle Pflichtfelder aus.";
+        return;
+      }
+
+      if (new Date(from) > new Date(to)) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "Das Enddatum muss nach dem Startdatum liegen.";
+        return;
+      }
+
+      errorDiv.style.display = "none";
+      onCreate({ title, description, destination, from, to });
+      closeModal();
+    });
+  }
+
+  await refreshTripList();
 }

@@ -167,4 +167,11 @@ public class TripController {
         // Implementation of updateTrip method
         return null; // Placeholder return, actual implementation needed
     }
+
+    @GetMapping
+    public ResponseEntity<List<TripDto>> getAllTrips() {
+        List<Trip> trips = tripService.findAll();
+        List<TripDto> tripDtos = trips.stream().map(tripMapper::toDto).toList();
+        return ResponseEntity.ok(tripDtos);
+    }
 } 

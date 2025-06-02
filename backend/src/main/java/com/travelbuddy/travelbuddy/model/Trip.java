@@ -7,13 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Represents a trip in the TravelBuddy application.
  * This entity is mapped to the 'trips' table in the database.
  */
+
 @Entity
 @Table(name = "trips")
 @Data
@@ -29,7 +32,7 @@ public class Trip {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000)
+    @Column(length = 5000)
     private String description;
 
     @Column(nullable = false)
@@ -58,6 +61,10 @@ public class Trip {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private TripStatus status = TripStatus.PLANNING;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Location> locations = new ArrayList<>();
 
     // Helper methods
     public void addParticipant(User user) {

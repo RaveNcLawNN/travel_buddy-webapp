@@ -27,6 +27,7 @@ export async function loadHome() {
   }
   app.replaceChildren();
   app.className = '';
+  document.body.className = 'home-view';
 
   const heroSection = createHeroSection(onSearch);
   const mapContainer = createMapContainer();

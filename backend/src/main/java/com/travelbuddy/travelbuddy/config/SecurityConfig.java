@@ -32,12 +32,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/h2-console/**", "/api/**").permitAll()
                 .anyRequest().permitAll()
             )
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())) // Required for H2 console
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")); // Disable CSRF for H2 console
+                .ignoringRequestMatchers("/h2-console/**", "/api/**")); // Disable CSRF for H2 console and API
         
         return http.build();
     }

@@ -6,6 +6,12 @@ export function getAllTrips() {
     return trips;
 }
 
+export function getTripLocation(id) {
+    const t = trips.find(x => x.id === id);
+    return t ? t.location : null;
+}
+
+
 export function addTrip(trip) {
     trips.unshift(trip);
 }

@@ -48,3 +48,62 @@
     display: block;
     margin-top: .25rem;
 }
+
+.trips-detail-view {
+    background-color: #fff;
+}
+
+/* Modal Overlay */
+.custom-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal Box */
+.custom-modal-dialog {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Header/Footer/Body */
+.custom-modal-header, .custom-modal-footer {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-modal-footer {
+  border-top: 1px solid #dee2e6;
+  border-bottom: none;
+  justify-content: flex-end;
+}
+
+.custom-modal-body {
+  padding: 1rem;
+}
+
+.custom-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

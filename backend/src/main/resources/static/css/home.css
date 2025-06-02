@@ -1,6 +1,6 @@
 /* in home.css ergänzen */
 
-body {
+body.home-view {
     background-color: rgb(200, 200, 200);
 }
 

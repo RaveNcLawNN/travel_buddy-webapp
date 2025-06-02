@@ -147,4 +147,8 @@ public class TripService {
         }
         return false;
     }
+
+    public List<Trip> findAll() {
+        return tripRepository.findAll();
+    }
 } 
