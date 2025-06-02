@@ -25,7 +25,7 @@ export async function getAllTrips() {
   return await fetchJsonOrThrow(`${API_BASE}/trips`, {}, 'Failed to fetch trips');
 }
 
-export async function getTripById() {
+export async function getTripById(id) {
   return await fetchJsonOrThrow(`${API_BASE}/trips/${id}`, {}, `Trip not found (id=${id})`);
 }
 
