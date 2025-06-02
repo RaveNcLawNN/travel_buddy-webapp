@@ -8,6 +8,11 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 import java.util.Optional;
 
@@ -38,6 +43,17 @@ public class UserController {
      * @param userDto the registration data (username, email, password)
      * @return HTTP 201 Created if successful, 400 Bad Request if username/email exists
      */
+    @Operation(summary = "Register a new user", description = "Registers a new user with username, email, and password.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "User registration data",
+            required = true,
+            content = @Content(examples = @ExampleObject(value = "{\"username\": \"john_doe\", \"email\": \"john@example.com\", \"password\": \"password123\"}"))
+        ),
+        responses = {
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Username or email already exists")
+        }
+    )
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto userDto) {
         // Check if username or email already exists
@@ -59,11 +75,75 @@ public class UserController {
      * @param username the username to search for
      * @return the user info if found, 404 Not Found otherwise
      */
+    @Operation(summary = "Get user by username", description = "Retrieves user information by username.",
+        parameters = @Parameter(name = "username", description = "Username to search for", example = "john_doe"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+        }
+    )
     @GetMapping("/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         Optional<User> userOpt = userService.findByUsername(username);
         if (userOpt.isPresent()) {
             return ResponseEntity.ok(userOpt.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    /**
+     * Updates user information by username.
+     *
+     * @param username the username to update
+     * @param userDto the updated user data
+     * @return the updated user info if found, 404 Not Found otherwise
+     */
+    @Operation(summary = "Update user by username", description = "Updates user information by username.",
+        parameters = @Parameter(name = "username", description = "Username to update", example = "john_doe"),
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Updated user data",
+            required = true,
+            content = @Content(examples = @ExampleObject(value = "{\"username\": \"john_doe\", \"email\": \"john_new@example.com\", \"password\": \"newpassword123\"}"))
+        ),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+        }
+    )
+    @PutMapping("/{username}")
+    public ResponseEntity<?> updateUserByUsername(@PathVariable String username, @Valid @RequestBody UserDto userDto) {
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setEmail(userDto.getEmail());
+            user.setPassword(userDto.getPassword()); // In real apps, hash the password!
+            userService.registerUser(user);
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    /**
+     * Deletes a user by username.
+     *
+     * @param username the username to delete
+     * @return 204 No Content if deleted, 404 Not Found otherwise
+     */
+    @Operation(summary = "Delete user by username", description = "Deletes a user by their username.",
+        parameters = @Parameter(name = "username", description = "Username to delete", example = "john_doe"),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+        }
+    )
+    @DeleteMapping("/{username}")
+    public ResponseEntity<?> deleteUserByUsername(@PathVariable String username) {
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            userService.deleteUser(userOpt.get());
+            return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
