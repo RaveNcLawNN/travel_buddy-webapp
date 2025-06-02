@@ -93,6 +93,29 @@ public class UserController {
     }
 
     /**
+     * Retrieves user information by user ID.
+     *
+     * @param id the user ID to search for
+     * @return the user info if found, 404 Not Found otherwise
+     */
+    @Operation(summary = "Get user by ID", description = "Retrieves user information by user ID.",
+        parameters = @Parameter(name = "id", description = "User ID to search for", example = "1"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+        }
+    )
+    @GetMapping("/id/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        Optional<User> userOpt = userService.findById(id);
+        if (userOpt.isPresent()) {
+            return ResponseEntity.ok(userOpt.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    /**
      * Updates user information by username.
      *
      * @param username the username to update

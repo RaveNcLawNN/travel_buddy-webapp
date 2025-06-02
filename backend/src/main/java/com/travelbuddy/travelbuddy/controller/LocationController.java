@@ -142,4 +142,58 @@ public class LocationController {
             })
             .orElse(ResponseEntity.notFound().build());
     }
+
+    /**
+     * Gets all locations for a specific trip.
+     * @param tripId the trip ID
+     * @return list of locations for the trip
+     */
+    @GetMapping("/trips/{tripId}")
+    public ResponseEntity<List<LocationDto>> getLocationsByTrip(@PathVariable Long tripId) {
+        var tripOpt = tripService.findById(tripId);
+        if (tripOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var locations = locationService.findByTrip(tripOpt.get());
+        var dtos = locations.stream().map(locationMapper::toDto).toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Updates a location by its ID.
+     * @param id the location ID
+     * @param locationDto the updated location data
+     * @return the updated location
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<LocationDto> updateLocation(@PathVariable Long id, @RequestBody LocationDto locationDto) {
+        var locationOpt = locationService.findById(id);
+        if (locationOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var location = locationOpt.get();
+        location.setName(locationDto.getName());
+        location.setLatitude(locationDto.getLatitude());
+        location.setLongitude(locationDto.getLongitude());
+        location.setAddress(locationDto.getAddress());
+        location.setType(locationDto.getType());
+        location.setDescription(locationDto.getDescription());
+        var updated = locationService.saveLocation(location);
+        return ResponseEntity.ok(locationMapper.toDto(updated));
+    }
+
+    /**
+     * Deletes a location by its ID.
+     * @param id the location ID
+     * @return 204 No Content if deleted, 404 Not Found otherwise
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
+        var locationOpt = locationService.findById(id);
+        if (locationOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        locationService.deleteLocation(locationOpt.get());
+        return ResponseEntity.noContent().build();
+    }
 } 

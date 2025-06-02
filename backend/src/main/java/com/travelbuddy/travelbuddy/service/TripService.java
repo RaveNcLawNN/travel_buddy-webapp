@@ -148,13 +148,12 @@ public class TripService {
         return false;
     }
 
-<<<<<<< HEAD
     public List<Trip> findAll() {
         return tripRepository.findAll();
-=======
+    }
+
     @Transactional
     public void deleteTrip(Trip trip) {
         tripRepository.delete(trip);
->>>>>>> 5d602c6ed3cb3477dd3085ebf88f201ffa2821f2
     }
 } 

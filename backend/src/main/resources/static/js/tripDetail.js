@@ -74,7 +74,7 @@ export async function loadTripDetail(id) {
       locations = await getLocationsByTrip(trip.id);
     } catch {
       locationsListDiv.appendChild(
-        createElement("p", { className: "text-danger" }, "Fehler beim Laden der Locations.")
+        createElement("p", { className: "text-danger" }, "Error loading locations.")
       );
       return;
     }
@@ -87,7 +87,18 @@ export async function loadTripDetail(id) {
     if (window.tripDetailMap) {
       window.tripDetailMap.remove();
     }
-    const map = L.map("trip-map").setView([0, 0], 2);
+    let mapCenter = [0, 0];
+    let zoom = 2;
+    let showTripMarker = false;
+    if (locations.length > 0) {
+      mapCenter = [locations[0].latitude, locations[0].longitude];
+      zoom = 13;
+    } else if (trip.latitude && trip.longitude) {
+      mapCenter = [trip.latitude, trip.longitude];
+      zoom = 13;
+      showTripMarker = true;
+    }
+    const map = L.map("trip-map").setView(mapCenter, zoom);
     window.tripDetailMap = map;
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
 
@@ -100,8 +111,11 @@ export async function loadTripDetail(id) {
         bounds.push([loc.latitude, loc.longitude]);
       });
       map.fitBounds(bounds, { padding: [50, 50] });
-    } else {
-      map.setView([0, 0], 2);
+    } else if (showTripMarker) {
+      L.marker([trip.latitude, trip.longitude])
+        .addTo(map)
+        .bindPopup(`<strong>${trip.destination}</strong>`)
+        .openPopup();
     }
   }
 
@@ -109,7 +123,7 @@ export async function loadTripDetail(id) {
   function renderLocationsList(locations) {
     locationsListDiv.replaceChildren();
     if (locations.length === 0) {
-      locationsListDiv.appendChild(createElement("p", {}, "Keine Locations vorhanden."));
+      locationsListDiv.appendChild(createElement("p", {}, "No locations available."));
       return;
     }
     locations.forEach((loc) => {
@@ -129,23 +143,23 @@ export async function loadTripDetail(id) {
 
   // Delete Location
   async function onDeleteLocation(locationId) {
-    if (!confirm("Möchtest du diese Location wirklich löschen?")) return;
+    if (!confirm("Do you really want to delete this location?")) return;
     try {
       await deleteLocation(locationId);
       await loadAndRenderLocations();
     } catch (e) {
-      alert("Fehler beim Löschen der Location: " + e.message);
+      alert("Error deleting location: " + e.message);
     }
   }
 
   // Delete Trip
   document.getElementById("deleteTripBtn").addEventListener("click", async () => {
-    if (!confirm("Möchtest du diesen Trip wirklich löschen?")) return;
+    if (!confirm("Do you really want to delete this trip?")) return;
     try {
       await deleteTrip(trip.id);
       window.location.hash = "#trips";
     } catch (e) {
-      alert("Fehler beim Löschen des Trips: " + e.message);
+      alert("Error deleting trip: " + e.message);
     }
   });
 

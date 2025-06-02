@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Data Transfer Object for trip information.
@@ -43,4 +44,8 @@ public class TripDto {
     private Long organizerId;
 
     private TripStatus status;
+
+    private Double latitude;
+    private Double longitude;
+    private List<LocationDto> locations;
 } 

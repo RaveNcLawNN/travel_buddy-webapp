@@ -52,7 +52,7 @@ export function openAddLocationForm(tripId, onSubmitCallback) {
         const data = fields.getData();
         if (!data) {
             errorDiv.style.display = "block";
-            errorDiv.textContent = "Bitte fülle alle Pflichtfelder korrekt aus.";
+            errorDiv.textContent = "Please fill out all required fields correctly.";
             return;
         }
         try {
@@ -60,7 +60,7 @@ export function openAddLocationForm(tripId, onSubmitCallback) {
             onSubmitCallback();
             closeModal();
         } catch (e) {
-            alert("Fehler beim Erstellen der Location: " + e.message);
+            alert("Error creating location: " + e.message);
         }
     });
 }
@@ -110,7 +110,7 @@ export function openEditLocationForm(location, tripId, onSubmitCallback) {
         const data = fields.getData();
         if (!data) {
             errorDiv.style.display = "block";
-            errorDiv.textContent = "Bitte fülle alle Pflichtfelder korrekt aus.";
+            errorDiv.textContent = "Please fill out all required fields correctly.";
             return;
         }
         try {
@@ -118,7 +118,7 @@ export function openEditLocationForm(location, tripId, onSubmitCallback) {
             onSubmitCallback();
             closeModal();
         } catch (e) {
-            alert("Fehler beim Aktualisieren der Location: " + e.message);
+            alert("Error updating location: " + e.message);
         }
     });
 }

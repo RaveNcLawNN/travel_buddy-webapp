@@ -246,13 +246,17 @@ public class TripController {
         return null; // Placeholder return, actual implementation needed
     }
 
-<<<<<<< HEAD
+    /**
+     * Gets all trips.
+     * @return list of all trips
+     */
     @GetMapping
     public ResponseEntity<List<TripDto>> getAllTrips() {
         List<Trip> trips = tripService.findAll();
         List<TripDto> tripDtos = trips.stream().map(tripMapper::toDto).toList();
         return ResponseEntity.ok(tripDtos);
-=======
+    }
+
     /**
      * Deletes a trip by its ID.
      * @param id the trip ID
@@ -274,6 +278,5 @@ public class TripController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
         }
->>>>>>> 5d602c6ed3cb3477dd3085ebf88f201ffa2821f2
     }
 } 

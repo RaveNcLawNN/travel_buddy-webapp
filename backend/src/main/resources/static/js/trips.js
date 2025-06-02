@@ -38,12 +38,14 @@ export async function loadTrips(page = 1) {
         destination: newTrip.destination,
         organizerId: 1, // TODO: mit echten ID's ersetzen sobald Session Handling da ist
         status: "PLANNING",
+        latitude: newTrip.latitude,
+        longitude: newTrip.longitude
       };
       try {
         await createTrip(payload);
         await refreshTripList();
       } catch (err) {
-        alert("Fehler beim Erstellen des Trips: " + err.message);
+        alert("Error creating trip: " + err.message);
       }
     });
   });
@@ -128,6 +130,48 @@ export async function loadTrips(page = 1) {
       createElement("input", { type: "text", className: "form-control", id: "tripDestination", required: true })
     );
 
+    // Add small map for destination
+    const mapDiv = createElement('div', { id: 'createTripMap', style: 'height: 200px; width: 100%; margin-bottom: 1rem; display: none;' });
+    body.appendChild(mapDiv);
+    let createTripMap, createTripMarker, selectedLat, selectedLon;
+
+    // Listen for destination input changes
+    setTimeout(() => {
+      const destinationInput = document.getElementById('tripDestination');
+      let debounceTimeout;
+      destinationInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimeout);
+        const query = e.target.value.trim();
+        if (!query) {
+          mapDiv.style.display = 'none';
+          return;
+        }
+        debounceTimeout = setTimeout(async () => {
+          try {
+            const locations = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`).then(res => res.json());
+            if (locations.length) {
+              const loc = locations[0];
+              selectedLat = loc.latitude;
+              selectedLon = loc.longitude;
+              mapDiv.style.display = 'block';
+              if (!createTripMap) {
+                createTripMap = L.map('createTripMap').setView([loc.latitude, loc.longitude], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(createTripMap);
+                createTripMarker = L.marker([loc.latitude, loc.longitude]).addTo(createTripMap);
+              } else {
+                createTripMap.setView([loc.latitude, loc.longitude], 13);
+                createTripMarker.setLatLng([loc.latitude, loc.longitude]);
+              }
+            } else {
+              mapDiv.style.display = 'none';
+            }
+          } catch {
+            mapDiv.style.display = 'none';
+          }
+        }, 500); // 500ms debounce
+      });
+    }, 0);
+
     const fromGroup = createElement("div", { className: "mb-3" },
       createElement("label", { for: "tripFrom", className: "form-label" }, "From:"),
       createElement("input", { type: "date", className: "form-control", id: "tripFrom", required: true })
@@ -169,18 +213,18 @@ export async function loadTrips(page = 1) {
 
       if (!title || !destination || !from || !to) {
         errorDiv.style.display = "block";
-        errorDiv.textContent = "Bitte fülle alle Pflichtfelder aus.";
+        errorDiv.textContent = "Please fill out all required fields.";
         return;
       }
 
       if (new Date(from) > new Date(to)) {
         errorDiv.style.display = "block";
-        errorDiv.textContent = "Das Enddatum muss nach dem Startdatum liegen.";
+        errorDiv.textContent = "The end date must be after the start date.";
         return;
       }
 
       errorDiv.style.display = "none";
-      onCreate({ title, description, destination, from, to });
+      onCreate({ title, description, destination, from, to, latitude: selectedLat, longitude: selectedLon });
       closeModal();
     });
   }
