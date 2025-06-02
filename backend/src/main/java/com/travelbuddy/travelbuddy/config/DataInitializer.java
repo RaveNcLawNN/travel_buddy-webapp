@@ -7,6 +7,8 @@ import com.travelbuddy.travelbuddy.model.Location;
 import com.travelbuddy.travelbuddy.repository.UserRepository;
 import com.travelbuddy.travelbuddy.repository.TripRepository;
 import com.travelbuddy.travelbuddy.repository.LocationRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,8 @@ import java.time.LocalDate;
 @Configuration
 public class DataInitializer {
 
+
+        
     /**
      * Creates a CommandLineRunner that populates the database with test data.
      * This data is useful for development and testing purposes.

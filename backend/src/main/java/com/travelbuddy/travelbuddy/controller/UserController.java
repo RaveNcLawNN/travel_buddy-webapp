@@ -2,9 +2,12 @@ package com.travelbuddy.travelbuddy.controller;
 
 import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.service.UserService;
+import com.travelbuddy.travelbuddy.JWT.JWTUtil;
 import com.travelbuddy.travelbuddy.dto.UserDto;
 import com.travelbuddy.travelbuddy.mapper.UserMapper;
 import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 /**
  * REST controller for user-related operations.
  * Handles HTTP requests for user registration and user information retrieval.
@@ -26,15 +31,20 @@ public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final JWTUtil jwtUtil;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     /**
      * Constructor-based dependency injection for UserService and UserMapper.
      * @param userService the service for user business logic
      * @param userMapper the mapper for converting DTOs to entities
      */
-    public UserController(UserService userService, UserMapper userMapper) {
+    public UserController(UserService userService, UserMapper userMapper, JWTUtil jwtUtil) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -173,4 +183,29 @@ public class UserController {
     }
 
     // Future: Add endpoints for updating and deleting users, listing all users, etc.
+    
+    /**
+     * Authenticates a User at login and returns session token.
+     *
+     * @param username the username of the user.
+     * @return 200 OK if successfully authenticated, 401 Unauthorized if username or password is incorrect. 
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody UserDto userDto) {
+        
+        User loginUser = userService.findByUsername(userDto.getUsername()).orElse(null);
+
+        if (loginUser != null) {
+            if (passwordEncoder.matches(userDto.getPassword(), loginUser.getPassword())) {
+                String token = jwtUtil.generateToken(loginUser);
+                return ResponseEntity.status(HttpStatus.OK).body(token);
+            }else
+            {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("1 Username or password incorrect \n" + loginUser.getPassword());
+            }
+        }else
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("2 Username or password incorrect");
+        }
+    }
 } 
