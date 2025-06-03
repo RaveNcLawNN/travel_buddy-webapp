@@ -89,18 +89,23 @@ export async function loadTripDetail(id) {
     }
     let mapCenter = [0, 0];
     let zoom = 2;
-    let showTripMarker = false;
     if (locations.length > 0) {
       mapCenter = [locations[0].latitude, locations[0].longitude];
       zoom = 13;
     } else if (trip.latitude && trip.longitude) {
       mapCenter = [trip.latitude, trip.longitude];
       zoom = 13;
-      showTripMarker = true;
     }
     const map = L.map("trip-map").setView(mapCenter, zoom);
     window.tripDetailMap = map;
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+
+    // Always add the trip's city marker if coordinates exist
+    if (trip.latitude && trip.longitude) {
+      L.marker([trip.latitude, trip.longitude])
+        .addTo(map)
+        .bindPopup(`<strong>${trip.destination}</strong><br>(Destination)`);
+    }
 
     if (locations.length > 0) {
       const bounds = [];
@@ -110,12 +115,8 @@ export async function loadTripDetail(id) {
           .bindPopup(`<strong>${loc.name}</strong><br>${loc.address || ""}`);
         bounds.push([loc.latitude, loc.longitude]);
       });
+      bounds.push([trip.latitude, trip.longitude]); // include city marker in bounds
       map.fitBounds(bounds, { padding: [50, 50] });
-    } else if (showTripMarker) {
-      L.marker([trip.latitude, trip.longitude])
-        .addTo(map)
-        .bindPopup(`<strong>${trip.destination}</strong>`)
-        .openPopup();
     }
   }
 

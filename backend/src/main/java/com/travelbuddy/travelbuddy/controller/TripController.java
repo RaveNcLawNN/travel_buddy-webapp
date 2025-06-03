@@ -44,11 +44,11 @@ public class TripController {
      * @param tripDto the trip data
      * @return the created trip
      */
-    @Operation(summary = "Create a new trip", description = "Creates a new trip with the provided details.",
+    @Operation(summary = "Create a new trip", description = "Creates a new trip with the provided details.\n\nRequired fields in the request body:\n- title (string)\n- description (string)\n- startDate (yyyy-MM-dd)\n- endDate (yyyy-MM-dd)\n- destination (string)\n- organizerId (number)\n- status (string, one of: PLANNING, ONGOING, COMPLETED, CANCELLED)",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Trip data",
+            description = "Trip data. Example includes all required fields, including status.",
             required = true,
-            content = @Content(examples = @ExampleObject(value = "{\"title\": \"Summer Vacation\", \"description\": \"Trip to Paris\", \"startDate\": \"2024-07-01\", \"endDate\": \"2024-07-07\", \"destination\": \"Paris\", \"organizerId\": 1}"))
+            content = @Content(examples = @ExampleObject(value = "{\"title\": \"Summer Vacation\", \"description\": \"Trip to Paris\", \"startDate\": \"2024-07-01\", \"endDate\": \"2024-07-07\", \"destination\": \"Paris\", \"organizerId\": 1, \"status\": \"PLANNING\"}"))
         ),
         responses = {
             @ApiResponse(responseCode = "201", description = "Trip created successfully"),
@@ -228,12 +228,12 @@ public class TripController {
                 .body("Trip or user not found");
     }
 
-    @Operation(summary = "Update a trip", description = "Updates the details of an existing trip.",
+    @Operation(summary = "Update a trip", description = "Updates the details of an existing trip.\n\nRequired fields in the request body:\n- title (string)\n- description (string)\n- startDate (yyyy-MM-dd)\n- endDate (yyyy-MM-dd)\n- destination (string)\n- organizerId (number)\n- status (string, one of: PLANNING, ONGOING, COMPLETED, CANCELLED)",
         parameters = @Parameter(name = "id", description = "Trip ID", example = "1"),
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Updated trip data",
+            description = "Updated trip data. Example includes all required fields, including status.",
             required = true,
-            content = @Content(examples = @ExampleObject(value = "{\"title\": \"Updated Trip\", \"description\": \"Updated description\", \"startDate\": \"2024-08-01\", \"endDate\": \"2024-08-10\", \"destination\": \"London\", \"organizerId\": 1}"))
+            content = @Content(examples = @ExampleObject(value = "{\"title\": \"Updated Trip\", \"description\": \"Updated description\", \"startDate\": \"2024-08-01\", \"endDate\": \"2024-08-10\", \"destination\": \"London\", \"organizerId\": 1, \"status\": \"ONGOING\"}"))
         ),
         responses = {
             @ApiResponse(responseCode = "200", description = "Trip updated successfully"),
@@ -250,6 +250,9 @@ public class TripController {
      * Gets all trips.
      * @return list of all trips
      */
+    @Operation(summary = "Get all trips", description = "Retrieves a list of all trips in the system.",
+        responses = @ApiResponse(responseCode = "200", description = "List of all trips")
+    )
     @GetMapping
     public ResponseEntity<List<TripDto>> getAllTrips() {
         List<Trip> trips = tripService.findAll();

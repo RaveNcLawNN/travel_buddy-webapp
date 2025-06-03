@@ -165,6 +165,18 @@ public class LocationController {
      * @param locationDto the updated location data
      * @return the updated location
      */
+    @Operation(summary = "Update a location by ID", description = "Updates a location's details.\n\nRequired fields in the request body:\n- name (string)\n- latitude (number)\n- longitude (number)\n- address (string)\n- type (string)\n- description (string)",
+        parameters = @Parameter(name = "id", description = "Location ID", example = "1"),
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Updated location data. Example includes all required fields.",
+            required = true,
+            content = @Content(examples = @ExampleObject(value = "{\"name\": \"Eiffel Tower\", \"latitude\": 48.8584, \"longitude\": 2.2945, \"address\": \"Champ de Mars, Paris\", \"type\": \"landmark\", \"description\": \"Iconic tower\"}"))
+        ),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Location updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Location not found")
+        }
+    )
     @PutMapping("/{id}")
     public ResponseEntity<LocationDto> updateLocation(@PathVariable Long id, @RequestBody LocationDto locationDto) {
         var locationOpt = locationService.findById(id);

@@ -61,6 +61,8 @@ public class DataInitializer {
                     .startDate(LocalDate.of(2024, 7, 1))
                     .endDate(LocalDate.of(2024, 7, 7))
                     .destination("Paris")
+                    .latitude(48.8566)
+                    .longitude(2.3522)
                     .organizer(user1)
                     .status(TripStatus.PLANNING)
                     .build();
