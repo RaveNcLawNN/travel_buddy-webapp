@@ -61,3 +61,16 @@ body.home-view {
     margin-bottom: 7vh;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
+
+@media (max-width: 768px) {
+    #map {
+        margin-left: 5vw;
+        margin-right: 5vw;
+    }
+}
+
+@media (max-width: 576px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+}

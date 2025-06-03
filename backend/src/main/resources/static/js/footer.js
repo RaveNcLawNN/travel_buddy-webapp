@@ -8,7 +8,7 @@ export function initFooterBar() {
         return;
     }
 
-    const footerElement = createElement('footer', { className: 'navbar navbar-dark bg-dark justify-content-center' },
+    const footerElement = createElement('footer', { className: 'navbar navbar-dark bg-dark' },
         createElement('div', { className: 'container' }, 
             createElement('span', { className: 'navbar-text text-light' }, `© ${new Date().getFullYear()} Travel Buddy – All rights reserved`))
     );
