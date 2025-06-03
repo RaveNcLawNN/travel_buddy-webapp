@@ -187,9 +187,20 @@ public class UserController {
     /**
      * Authenticates a User at login and returns session token.
      *
-     * @param username the username of the user.
-     * @return 200 OK if successfully authenticated, 401 Unauthorized if username or password is incorrect. 
+     * @param userDto the login credentials (username, password)
+     * @return 200 OK if successfully authenticated, 401 Unauthorized if username or password is incorrect.
      */
+    @Operation(summary = "User login", description = "Authenticates a user and returns a session token.\n\nRequired fields in the request body:\n- username (string)\n- password (string)",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Login credentials. Example includes all required fields.",
+            required = true,
+            content = @Content(examples = @ExampleObject(value = "{\"username\": \"john_doe\", \"password\": \"password123\"}"))
+        ),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Authenticated successfully, returns JWT token"),
+            @ApiResponse(responseCode = "401", description = "Username or password incorrect")
+        }
+    )
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserDto userDto) {
         

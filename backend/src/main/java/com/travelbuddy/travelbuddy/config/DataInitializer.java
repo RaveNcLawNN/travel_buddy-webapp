@@ -8,7 +8,6 @@ import com.travelbuddy.travelbuddy.repository.UserRepository;
 import com.travelbuddy.travelbuddy.repository.TripRepository;
 import com.travelbuddy.travelbuddy.repository.LocationRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +60,8 @@ public class DataInitializer {
                     .startDate(LocalDate.of(2024, 7, 1))
                     .endDate(LocalDate.of(2024, 7, 7))
                     .destination("Paris")
+                    .latitude(48.8566)
+                    .longitude(2.3522)
                     .organizer(user1)
                     .status(TripStatus.PLANNING)
                     .build();
