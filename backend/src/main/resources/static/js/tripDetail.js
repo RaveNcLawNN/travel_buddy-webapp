@@ -3,9 +3,10 @@
 //=============================================
 
 import { createElement } from "./createElement.js";
-import { getTripById, deleteTrip } from "./api.js";
+import { getTripById, deleteTrip, updateTrip } from "./api.js";
 import { getLocationsByTrip, createLocation, updateLocation, deleteLocation } from "./api.js";
 import { openAddLocationForm, openEditLocationForm } from "./locationModal.js";
+import { openEditTripForm } from "./tripModal.js";
 
 //=============================================
 // MAIN EXPORT
@@ -35,15 +36,18 @@ export async function loadTripDetail(id) {
 
   const container = createElement("div", { className: "container py-5" });
 
-  // Header: Title, Date, Status, Delete-Btn
+  // Header: Title, Date, Status, Delete-Btn, Edit-Btn
   const header = createElement("div", { className: "d-flex justify-content-between align-items-center mb-4" },
-    createElement("div", {},
-      createElement("h2", { className: "mb-1" }, trip.title),
-      createElement("p", {}, `Destination: ${trip.destination}`,
+    createElement("div", { id: "tripDetailsContainer" },
+      createElement("h2", { className: "mb-1", id: "tripTitleDisplay" }, trip.title),
+      createElement("p", { id: "tripInfoDisplay" }, `Destination: ${trip.destination}`,
         createElement("br"), `From: ${trip.startDate} - To: ${trip.endDate}`,
         createElement("br"), `Status: ${trip.status}`)
     ),
-    createElement("button", { className: "btn btn-danger", id: "deleteTripBtn" }, "Delete Trip")
+    createElement("div", { id: "editDeleteBtn" },
+      createElement("button", { className: "btn btn-warning me-2", id: "editTripBtn" }, "Edit Trip"),
+      createElement("button", { className: "btn btn-danger", id: "deleteTripBtn" }, "Delete Trip")
+    )
   );
   container.appendChild(header);
 
@@ -60,9 +64,16 @@ export async function loadTripDetail(id) {
   container.appendChild(locationsListDiv);
 
   // Back-Btn
-  const backBtn = createElement("button", { className: "btn btn-secondary mt-4", onclick: () => { window.location.hash = "#trips"; }}, "← Back to Trips");
+  const backBtn = createElement("button", { className: "btn btn-secondary mt-4", onclick: () => { window.location.hash = "#trips"; } }, "← Back to Trips");
   container.appendChild(backBtn);
   app.appendChild(container);
+
+  // Edit-Btn
+  document.getElementById("editTripBtn").addEventListener("click", () => {
+    openEditTripForm(trip, async () => {
+      await loadTripDetail(trip.id);
+    });
+  });
 
   //=============================================
   // 3) LOAD LOCATIONS & RENDER

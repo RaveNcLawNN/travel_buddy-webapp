@@ -103,7 +103,10 @@ public class LocationController {
             @RequestParam(defaultValue = "1000") int radius,
             @RequestParam(defaultValue = "restaurant,cafe,hotel") String types) {
         
-        List<String> amenityTypes = List.of(types.split(","));
+        List<String> amenityTypes = types.isBlank() ? List.of() : List.of(types.split(","));
+        if (amenityTypes.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(overpassService.searchPointsOfInterest(
             latitude, longitude, radius, amenityTypes));
     }

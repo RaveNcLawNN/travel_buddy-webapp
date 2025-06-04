@@ -1,5 +1,14 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from './createElement.js';
 import { searchPointsOfInterest } from './api.js';
+import { createMap, setMapMarker, clearMapMarkers, fitMapToMarkers, addPoiFilterPanel } from './map.js';
+
+//=============================================
+// HERO SECTION
+//=============================================
 
 function createHeroSection(onSearch) {
   const heading = createElement('h1', { className: 'display-4 text-shadow text-bold text-more-space', textContent: 'Welcome to Travel Buddy' });
@@ -15,10 +24,18 @@ function createHeroSection(onSearch) {
   return createElement('section', { id: 'hero-section' }, heroContent);
 }
 
+//=============================================
+// MAP SECTION
+//=============================================
+
 function createMapContainer() {
   const mapContainer = createElement('section', { id: 'map' });
   return mapContainer;
 }
+
+//=============================================
+// MAIN ENTRY POINT
+//=============================================
 
 export async function loadHome() {
   const app = document.getElementById('app');
@@ -34,14 +51,29 @@ export async function loadHome() {
   const mapContainer = createMapContainer();
   app.append(heroSection, mapContainer);
 
-  const map = L.map('map').setView([20, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-  let marker;
-  let poiMarkers = [];
+  //=============================================
+  // MAP INITIALIZATION
+  //=============================================
 
-  console.log('Home.js loaded, L.AwesomeMarkers:', window.L && window.L.AwesomeMarkers);
+  const map = createMap('map', [20, 0], 2);
+  let cityMarker = null;
+  let poiMarkers = [];
+  let currentCoords = null;
+  let currentTypes = [];
+  let currentRadius = 1000;
+
+  // Dynamic POI filters
+  addPoiFilterPanel(map, (selectedTypes, radius) => {
+    currentTypes = selectedTypes;
+    currentRadius = radius;
+    if (currentCoords) {
+      loadPois(currentCoords.lat, currentCoords.lon, currentTypes, currentRadius);
+    }
+  });
+
+  //=============================================
+  // EVENT HANDLERS
+  //=============================================
 
   async function onSearch(e) {
     e.preventDefault();
@@ -52,46 +84,61 @@ export async function loadHome() {
     try {
       const res = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
       const locations = await res.json();
-      if (locations.length) {
-        const loc = locations[0];
-        map.setView([loc.latitude, loc.longitude], 13);
-        if (marker) map.removeLayer(marker);
-        // Main destination: default Leaflet marker
-        marker = L.marker([loc.latitude, loc.longitude]).addTo(map)
-          .bindPopup(loc.displayName)
-          .openPopup();
 
-        // Remove old POI markers
-        poiMarkers.forEach(m => map.removeLayer(m));
-        poiMarkers = [];
-        // Fetch and display POIs
-        try {
-          const pois = await searchPointsOfInterest({
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            radius: 1000, // 1km
-            types: ['hotel', 'museum', 'theatre', 'attraction', 'train_station', 'bus_station', 'airport', 'hospital']
-          });
-          pois.forEach(poi => {
-            // All POIs: default Leaflet marker
-            const poiMarker = L.marker([poi.latitude, poi.longitude]).addTo(map)
-              .bindPopup(`<strong>${poi.name}</strong><br>Type: ${poi.type}${poi.website ? `<br><a href='${poi.website}' target='_blank'>Website</a>` : ''}${poi.phone ? `<br>Phone: ${poi.phone}` : ''}`);
-            poiMarkers.push(poiMarker);
-          });
-        } catch (e) {
-          // Optionally show a warning, but don't block city search
-        }
+      if (!locations.length) return alert(`No locations found matching "${query}".`);
 
-        const mapElement = document.getElementById('map');
-        if (mapElement) {
-          mapElement.scrollIntoView({ behavior: 'smooth', block: 'center'});
-        }
-      } else {
-        alert(`No locations found matching "${query}".`);
-      }
-    } catch {
+      const loc = locations[0];
+      currentCoords = { lat: loc.latitude, lon: loc.longitude };
+      map.setView([loc.latitude, loc.longitude], 13);
+
+      cityMarker = setMapMarker(map, loc.latitude, loc.longitude, loc.displayName, cityMarker, 'default');
+
+      await loadPois(loc.latitude, loc.longitude, currentTypes);
+
+      document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+
+    } catch (err) {
       alert('Error fetching location.');
     }
   }
-}
 
+  // Loads and shows POIs on the map baed on filters
+  async function loadPois(lat, lon, types, radius) {
+    poiMarkers = clearMapMarkers(map, poiMarkers);
+
+    if (!types || types.length === 0) {
+      return;
+    }
+
+    try {
+      const pois = await searchPointsOfInterest({
+        latitude: lat,
+        longitude: lon,
+        radius,
+        types
+      });
+
+      if (!pois || pois.length === 0) {
+        return;
+      }
+
+      pois.forEach(poi => {
+        const rawType = poi.type || 'default';
+        const type = rawType.toLowerCase();
+
+        if (!types.includes(type)) return;
+
+        const popup = `<strong>${poi.name}</strong><br>Type: ${rawType}${poi.website ? `<br><a href='${poi.website}' target='_blank'>Website</a>` : ''
+          }${poi.phone ? `<br>Phone: ${poi.phone}` : ''}`;
+
+        const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, type);
+        poiMarkers.push(marker);
+      });
+
+      // fitMapToMarkers(map, [cityMarker, ...poiMarkers]);
+    } catch (e) {
+      console.log('Failed to load POIs:', e);
+    }
+  }
+}

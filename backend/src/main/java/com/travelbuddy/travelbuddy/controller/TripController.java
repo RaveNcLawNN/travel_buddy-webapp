@@ -242,8 +242,16 @@ public class TripController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTrip(@PathVariable Long id, @Valid @RequestBody TripDto tripDto) {
-        // Implementation of updateTrip method
-        return null; // Placeholder return, actual implementation needed
+        Optional<Trip> tripOpt = tripService.findById(id);
+        if (tripOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
+        }
+
+        Trip trip = tripOpt.get();
+        tripMapper.updateEntityFromDto(tripDto, trip);
+        Trip updatedTrip = tripService.updateTrip(trip);
+
+        return ResponseEntity.ok(tripMapper.toDto(updatedTrip));
     }
 
     /**

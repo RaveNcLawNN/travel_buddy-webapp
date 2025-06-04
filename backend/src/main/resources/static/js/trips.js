@@ -10,25 +10,25 @@ import { getAllTrips, createTrip } from "./api.js";
 //=============================================
 
 export async function loadTrips(page = 1) {
-    const app = document.getElementById('app');
-    if (!app) return;
+  const app = document.getElementById('app');
+  if (!app) return;
 
-    app.replaceChildren();
-    app.className = 'trip-view';
-    
-    // Layout: Header + Button
-    const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
-    const heading = createElement("h2", { className: "display-5 fw-bold text-center mb-spacing" }, "My Trips");
-    const newTripBtn = createElement("button", { className: "btn btn-success mb-4" }, "+");
-    container.append(heading, newTripBtn);
+  app.replaceChildren();
+  app.className = 'trip-view';
 
-    // Trip List
-    const list = createElement("div", { className: "trip-list d-flex flex-column align-items-center w-100 gap-3" });
-    container.appendChild(list);
-    app.appendChild(container);
+  // Layout: Header + Button
+  const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
+  const heading = createElement("h2", { className: "display-5 fw-bold text-center mb-spacing" }, "My Trips");
+  const newTripBtn = createElement("button", { className: "btn btn-success mb-4" }, "+");
+  container.append(heading, newTripBtn);
 
-    // Modal Handler: Trip Creation
-    newTripBtn.addEventListener("click", () => {
+  // Trip List
+  const list = createElement("div", { className: "trip-list d-flex flex-column align-items-center w-100 gap-3" });
+  container.appendChild(list);
+  app.appendChild(container);
+
+  // Modal Handler: Trip Creation
+  newTripBtn.addEventListener("click", () => {
     openTripModal(async (newTrip) => {
       const payload = {
         title: newTrip.title,
@@ -124,7 +124,7 @@ export async function loadTrips(page = 1) {
       createElement("label", { for: "tripDescription", className: "form-label" }, "Description:"),
       createElement("textarea", { className: "form-control", id: "tripDescription" })
     );
-    
+
     const destGroup = createElement("div", { className: "mb-3" },
       createElement("label", { for: "tripDestination", className: "form-label" }, "Destination:"),
       createElement("input", { type: "text", className: "form-control", id: "tripDestination", required: true })

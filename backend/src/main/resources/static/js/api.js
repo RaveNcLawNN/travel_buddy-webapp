@@ -14,7 +14,10 @@ async function fetchJsonOrThrow(url, options, errorMsg) {
     const text = await res.text();
     throw new Error(`${errorMsg}: ${text}`);
   }
-  return await res.json();
+
+  // Parse only if body !empty
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 //=============================================
@@ -48,10 +51,10 @@ export async function updateTrip(id, payload) {
 export async function deleteTrip(id) {
   const res = await fetch(`${API_BASE}/trips/${id}`, {
     method: 'DELETE',
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to delete trip (id=${id})`);
-    }
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete trip (id=${id})`);
+  }
 }
 
 //=============================================
