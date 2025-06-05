@@ -4,6 +4,7 @@
 
 import { createElement } from "./createElement.js";
 import { getAllTrips, createTrip } from "./api.js";
+import { isLoggedIn } from "./auth.js";
 
 //=============================================
 // MAIN ENTRY POINT: VIEW RENDERER
@@ -12,6 +13,11 @@ import { getAllTrips, createTrip } from "./api.js";
 export async function loadTrips(page = 1) {
   const app = document.getElementById('app');
   if (!app) return;
+
+  if (!isLoggedIn()) {
+    app.innerHTML = '<div class="alert alert-warning">Please log in to view your trips.</div>';
+    return;
+  }
 
   app.replaceChildren();
   app.className = 'trip-view';

@@ -1,9 +1,15 @@
 package com.travelbuddy.travelbuddy.service;
 
 import com.travelbuddy.travelbuddy.model.User;
+import com.travelbuddy.travelbuddy.model.Buddy;
 import com.travelbuddy.travelbuddy.repository.UserRepository;
+import com.travelbuddy.travelbuddy.repository.BuddyRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,13 +20,19 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BuddyRepository buddyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
-     * Constructor-based dependency injection for UserRepository.
+     * Constructor-based dependency injection for UserRepository, BuddyRepository, and PasswordEncoder.
      * @param userRepository the repository for user data access
+     * @param buddyRepository the repository for buddy data access
+     * @param passwordEncoder the password encoder for encoding passwords
      */
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, BuddyRepository buddyRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.buddyRepository = buddyRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -29,7 +41,7 @@ public class UserService {
      * @return the saved user entity
      */
     public User registerUser(User user) {
-        // In a real application, you should hash the password here!
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -80,5 +92,74 @@ public class UserService {
 
     public void deleteUser(User user) {
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public Buddy sendBuddyRequest(User user, User buddy) {
+        // Check if a relationship already exists
+        Optional<Buddy> existingRelationship = buddyRepository.findBuddyRelationship(user, buddy);
+        if (existingRelationship.isPresent()) {
+            throw new IllegalStateException("A buddy relationship already exists between these users");
+        }
+
+        // Create new buddy relationship
+        Buddy newBuddy = Buddy.builder()
+                .user(user)
+                .buddy(buddy)
+                .accepted(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        return buddyRepository.save(newBuddy);
+    }
+
+    @Transactional
+    public Buddy acceptBuddyRequest(Long buddyId, User user) {
+        Buddy buddy = buddyRepository.findById(buddyId)
+                .orElseThrow(() -> new IllegalStateException("Buddy request not found"));
+
+        if (!buddy.getBuddy().equals(user)) {
+            throw new IllegalStateException("This buddy request is not for you");
+        }
+
+        buddy.setAccepted(true);
+        buddy.setAcceptedAt(LocalDateTime.now());
+        return buddyRepository.save(buddy);
+    }
+
+    @Transactional
+    public void rejectBuddyRequest(Long buddyId, User user) {
+        Buddy buddy = buddyRepository.findById(buddyId)
+                .orElseThrow(() -> new IllegalStateException("Buddy request not found"));
+
+        if (!buddy.getBuddy().equals(user)) {
+            throw new IllegalStateException("This buddy request is not for you");
+        }
+
+        buddyRepository.delete(buddy);
+    }
+
+    public List<Buddy> getBuddies(User user) {
+        return buddyRepository.findAllBuddies(user);
+    }
+
+    public List<Buddy> getPendingBuddyRequests(User user) {
+        return buddyRepository.findPendingBuddyRequests(user);
+    }
+
+    public List<Buddy> getSentBuddyRequests(User user) {
+        return buddyRepository.findSentBuddyRequests(user);
+    }
+
+    @Transactional
+    public void removeBuddy(Long buddyId, User user) {
+        Buddy buddy = buddyRepository.findById(buddyId)
+                .orElseThrow(() -> new IllegalStateException("Buddy relationship not found"));
+
+        if (!buddy.getUser().equals(user) && !buddy.getBuddy().equals(user)) {
+            throw new IllegalStateException("You are not part of this buddy relationship");
+        }
+
+        buddyRepository.delete(buddy);
     }
 } 

@@ -2,11 +2,11 @@
 import { loadHome } from './home.js';
 import { loadTrips } from './trips.js'
 import { loadTripDetail } from './tripDetail.js';
+import { loadBuddies } from './buddies.js';
 
 export function route() {
     const view = (location.hash.replace('#', '').trim().toLowerCase()) || 'home';
     console.log('Routing to view:', view);
-
 
     if (view.startsWith('trip/')) {
         const id = view.split('/')[1];
@@ -20,6 +20,9 @@ export function route() {
             break;
         case 'trips':
             loadTrips();
+            break;
+        case 'buddies':
+            loadBuddies();
             break;
         default:
             loadHome();

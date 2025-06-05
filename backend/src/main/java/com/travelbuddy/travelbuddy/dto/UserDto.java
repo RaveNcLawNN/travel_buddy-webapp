@@ -36,6 +36,6 @@ public class UserDto {
      * The password chosen by the user (should be hashed before storing).
      */
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 1, message = "Password must be at least 1 character")
     private String password;
 } 

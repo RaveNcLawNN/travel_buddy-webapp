@@ -1,10 +1,14 @@
 package com.travelbuddy.travelbuddy.controller;
 
 import com.travelbuddy.travelbuddy.model.User;
+import com.travelbuddy.travelbuddy.model.Buddy;
 import com.travelbuddy.travelbuddy.service.UserService;
 import com.travelbuddy.travelbuddy.JWT.JWTUtil;
 import com.travelbuddy.travelbuddy.dto.UserDto;
+import com.travelbuddy.travelbuddy.dto.BuddyDto;
+import com.travelbuddy.travelbuddy.dto.LoginDto;
 import com.travelbuddy.travelbuddy.mapper.UserMapper;
+import com.travelbuddy.travelbuddy.mapper.BuddyMapper;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +21,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -31,6 +37,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final BuddyMapper buddyMapper;
     private final JWTUtil jwtUtil;
 
     @Autowired
@@ -41,9 +48,10 @@ public class UserController {
      * @param userService the service for user business logic
      * @param userMapper the mapper for converting DTOs to entities
      */
-    public UserController(UserService userService, UserMapper userMapper, JWTUtil jwtUtil) {
+    public UserController(UserService userService, UserMapper userMapper, BuddyMapper buddyMapper, JWTUtil jwtUtil) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.buddyMapper = buddyMapper;
         this.jwtUtil = jwtUtil;
     }
 
@@ -187,7 +195,7 @@ public class UserController {
     /**
      * Authenticates a User at login and returns session token.
      *
-     * @param userDto the login credentials (username, password)
+     * @param loginDto the login credentials (username, password)
      * @return 200 OK if successfully authenticated, 401 Unauthorized if username or password is incorrect.
      */
     @Operation(summary = "User login", description = "Authenticates a user and returns a session token.\n\nRequired fields in the request body:\n- username (string)\n- password (string)",
@@ -202,21 +210,128 @@ public class UserController {
         }
     )
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto) {
+        System.out.println("Login attempt - Username: " + loginDto.getUsername());
         
-        User loginUser = userService.findByUsername(userDto.getUsername()).orElse(null);
+        User loginUser = userService.findByUsername(loginDto.getUsername()).orElse(null);
+        System.out.println("User found: " + (loginUser != null));
 
-        if (loginUser != null) {
-            if (passwordEncoder.matches(userDto.getPassword(), loginUser.getPassword())) {
-                String token = jwtUtil.generateToken(loginUser);
-                return ResponseEntity.status(HttpStatus.OK).body(token);
-            }else
-            {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("1 Username or password incorrect \n" + loginUser.getPassword());
-            }
-        }else
-        {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("2 Username or password incorrect");
+        if (loginUser != null && passwordEncoder.matches(loginDto.getPassword(), loginUser.getPassword())) {
+            String token = jwtUtil.generateToken(loginUser);
+            return ResponseEntity.ok(token);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
+    }
+
+    @Operation(summary = "Send a buddy request", description = "Sends a buddy request to another user.")
+    @PostMapping("/{username}/buddy-request/{buddyUsername}")
+    public ResponseEntity<?> sendBuddyRequest(
+            @PathVariable String username,
+            @PathVariable String buddyUsername) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            User buddy = userService.findByUsername(buddyUsername)
+                    .orElseThrow(() -> new IllegalStateException("Buddy not found"));
+
+            Buddy buddyRequest = userService.sendBuddyRequest(user, buddy);
+            return ResponseEntity.ok(buddyMapper.toDto(buddyRequest, user));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Accept a buddy request", description = "Accepts a pending buddy request.")
+    @PostMapping("/{username}/buddy-request/{buddyId}/accept")
+    public ResponseEntity<?> acceptBuddyRequest(
+            @PathVariable String username,
+            @PathVariable Long buddyId) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            Buddy buddy = userService.acceptBuddyRequest(buddyId, user);
+            return ResponseEntity.ok(buddyMapper.toDto(buddy, user));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Reject a buddy request", description = "Rejects a pending buddy request.")
+    @PostMapping("/{username}/buddy-request/{buddyId}/reject")
+    public ResponseEntity<?> rejectBuddyRequest(
+            @PathVariable String username,
+            @PathVariable Long buddyId) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            userService.rejectBuddyRequest(buddyId, user);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get all buddies", description = "Retrieves all accepted buddy relationships for a user.")
+    @GetMapping("/{username}/buddies")
+    public ResponseEntity<?> getBuddies(@PathVariable String username) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            List<Buddy> buddies = userService.getBuddies(user);
+            List<BuddyDto> buddyDtos = buddies.stream()
+                    .map(b -> buddyMapper.toDto(b, user))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(buddyDtos);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get pending buddy requests", description = "Retrieves all pending buddy requests for a user.")
+    @GetMapping("/{username}/buddy-requests/pending")
+    public ResponseEntity<?> getPendingBuddyRequests(@PathVariable String username) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            List<Buddy> pendingRequests = userService.getPendingBuddyRequests(user);
+            List<BuddyDto> buddyDtos = pendingRequests.stream()
+                    .map(b -> buddyMapper.toDto(b, user))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(buddyDtos);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get sent buddy requests", description = "Retrieves all sent buddy requests by a user.")
+    @GetMapping("/{username}/buddy-requests/sent")
+    public ResponseEntity<?> getSentBuddyRequests(@PathVariable String username) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            List<Buddy> sentRequests = userService.getSentBuddyRequests(user);
+            List<BuddyDto> buddyDtos = sentRequests.stream()
+                    .map(b -> buddyMapper.toDto(b, user))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(buddyDtos);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Remove a buddy", description = "Removes a buddy relationship.")
+    @DeleteMapping("/{username}/buddies/{buddyId}")
+    public ResponseEntity<?> removeBuddy(
+            @PathVariable String username,
+            @PathVariable Long buddyId) {
+        try {
+            User user = userService.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+            userService.removeBuddy(buddyId, user);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 } 

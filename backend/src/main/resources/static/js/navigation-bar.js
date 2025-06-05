@@ -3,6 +3,9 @@
  * Wird nur einmalig beim ersten Laden der Seite aufgerufen
  */
 
+import { isLoggedIn, logout, getCurrentUser } from './auth.js';
+import { showLoginModal } from './loginModal.js';
+
 export function initNavigationBar() {
     const navbar = document.getElementById('navbar');
     if (!navbar) {
@@ -10,8 +13,8 @@ export function initNavigationBar() {
         return;
     }
 
-    // Reset vom aktuellen Inhalt - noch nicht sicher ob wir das bei der Navigation Bar brauchen, weil die ist ja bei jeder View da.
-    app.innerHTML = '';
+    // Clear the current content to prevent duplicate navbars
+    navbar.innerHTML = '';
     
     // <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     const nav = document.createElement('nav');
@@ -73,21 +76,53 @@ export function initNavigationBar() {
         ul.appendChild(li);
     });
 
-    // Login-Button (öffnet später Login/Registrierung)
-    const loginBtn = document.createElement('button');
-    loginBtn.className = 'btn btn-outline-light me-5';
-    loginBtn.id = 'loginBtn';
-    loginBtn.type = 'button';
-    loginBtn.textContent = 'Login / Create Account';
+    // Login/Logout Button
+    const authBtn = document.createElement('button');
+    authBtn.className = 'btn btn-outline-light me-5';
+    authBtn.id = 'authBtn';
+    authBtn.type = 'button';
 
-    // Click-Event: Platzhalter für Login/Registrierung
-    loginBtn.addEventListener('click', () => {
-        alert('Login or create account functionality goes here.');
-    });
+    // Create a container for the auth section
+    const authContainer = document.createElement('div');
+    authContainer.className = 'd-flex align-items-center';
+
+    // Create a span for the username
+    const usernameSpan = document.createElement('span');
+    usernameSpan.className = 'text-light me-3';
+    usernameSpan.style.display = 'none'; // Hidden by default
+
+    // Update auth button based on login state
+    function updateAuthButton() {
+        if (isLoggedIn()) {
+            const currentUser = getCurrentUser();
+            usernameSpan.textContent = `Currently logged in as: ${currentUser.username}`;
+            usernameSpan.style.display = 'inline'; // Show the username
+            authBtn.textContent = 'Logout';
+            authBtn.className = 'btn btn-outline-light me-5';
+            authBtn.onclick = () => {
+                logout();
+                updateAuthButton();
+            };
+        } else {
+            usernameSpan.style.display = 'none'; // Hide the username
+            authBtn.textContent = 'Login / Create Account';
+            authBtn.className = 'btn btn-outline-light me-5';
+            authBtn.onclick = () => {
+                showLoginModal();
+            };
+        }
+    }
+
+    // Initial update of auth button
+    updateAuthButton();
+
+    // Add username span and auth button to container
+    authContainer.appendChild(usernameSpan);
+    authContainer.appendChild(authBtn);
 
     // Aufbau der Elemente
     collapse.appendChild(ul);               // Links
-    collapse.appendChild(loginBtn);         // Login-Button
+    collapse.appendChild(authContainer);    // Auth section (username + button)
     container.appendChild(travelapp);       // Überschrift
     container.appendChild(toggler);         // Toggler
     container.appendChild(collapse);        // Collapse-Bereich
