@@ -25,6 +25,7 @@ export function getCurrentUser() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return {
             username: payload.sub,
+            id: payload.id,
             // Add any other user properties you need
         };
     } catch (error) {

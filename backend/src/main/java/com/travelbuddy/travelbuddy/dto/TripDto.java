@@ -48,4 +48,7 @@ public class TripDto {
     private Double latitude;
     private Double longitude;
     private List<LocationDto> locations;
+
+    // Add participant usernames
+    private List<String> participantUsernames;
 } 

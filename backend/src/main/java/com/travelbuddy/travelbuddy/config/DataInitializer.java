@@ -93,6 +93,8 @@ public class DataInitializer {
             
             trip1.addParticipant(david);
             trip1.addParticipant(emanuel);
+            trip1.addParticipant(martin);
+            trip1.addParticipant(daniel);
             tripRepository.save(trip1);
 
             // Create test locations
@@ -119,33 +121,55 @@ public class DataInitializer {
             locationRepository.save(eiffelTower);
             locationRepository.save(louvre);
 
-            // Create some test buddy relationships
-            Buddy buddy1 = Buddy.builder()
+            // All users are friends with each other (fully connected, accepted)
+            Buddy buddyDE = Buddy.builder()
                     .user(david)
                     .buddy(emanuel)
                     .accepted(true)
                     .createdAt(LocalDateTime.now().minusDays(5))
                     .acceptedAt(LocalDateTime.now().minusDays(4))
                     .build();
-
-            Buddy buddy2 = Buddy.builder()
-                    .user(martin)
+            Buddy buddyDM = Buddy.builder()
+                    .user(david)
+                    .buddy(martin)
+                    .accepted(true)
+                    .createdAt(LocalDateTime.now().minusDays(4))
+                    .acceptedAt(LocalDateTime.now().minusDays(3))
+                    .build();
+            Buddy buddyDD = Buddy.builder()
+                    .user(david)
                     .buddy(daniel)
                     .accepted(true)
                     .createdAt(LocalDateTime.now().minusDays(3))
                     .acceptedAt(LocalDateTime.now().minusDays(2))
                     .build();
-
-            Buddy buddy3 = Buddy.builder()
-                    .user(david)
+            Buddy buddyEM = Buddy.builder()
+                    .user(emanuel)
                     .buddy(martin)
-                    .accepted(false)
-                    .createdAt(LocalDateTime.now().minusDays(1))
+                    .accepted(true)
+                    .createdAt(LocalDateTime.now().minusDays(2))
+                    .acceptedAt(LocalDateTime.now().minusDays(1))
                     .build();
-
-            buddyRepository.save(buddy1);
-            buddyRepository.save(buddy2);
-            buddyRepository.save(buddy3);
+            Buddy buddyED = Buddy.builder()
+                    .user(emanuel)
+                    .buddy(daniel)
+                    .accepted(true)
+                    .createdAt(LocalDateTime.now().minusDays(2))
+                    .acceptedAt(LocalDateTime.now().minusDays(1))
+                    .build();
+            Buddy buddyMD = Buddy.builder()
+                    .user(martin)
+                    .buddy(daniel)
+                    .accepted(true)
+                    .createdAt(LocalDateTime.now().minusDays(1))
+                    .acceptedAt(LocalDateTime.now())
+                    .build();
+            buddyRepository.save(buddyDE);
+            buddyRepository.save(buddyDM);
+            buddyRepository.save(buddyDD);
+            buddyRepository.save(buddyEM);
+            buddyRepository.save(buddyED);
+            buddyRepository.save(buddyMD);
         };
     }
 } 

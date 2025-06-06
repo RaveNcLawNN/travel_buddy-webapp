@@ -7,6 +7,7 @@ import com.travelbuddy.travelbuddy.model.User;
 import com.travelbuddy.travelbuddy.service.TripService;
 import com.travelbuddy.travelbuddy.service.UserService;
 import com.travelbuddy.travelbuddy.mapper.TripMapper;
+import com.travelbuddy.travelbuddy.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for trip-related operations.
@@ -32,11 +36,13 @@ public class TripController {
     private final TripService tripService;
     private final UserService userService;
     private final TripMapper tripMapper;
+    private final UserRepository userRepository;
 
-    public TripController(TripService tripService, UserService userService, TripMapper tripMapper) {
+    public TripController(TripService tripService, UserService userService, TripMapper tripMapper, UserRepository userRepository) {
         this.tripService = tripService;
         this.userService = userService;
         this.tripMapper = tripMapper;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -65,6 +71,13 @@ public class TripController {
         Trip trip = tripMapper.toEntity(tripDto);
         trip.setOrganizer(organizerOpt.get());
         trip.addParticipant(organizerOpt.get());
+        if (tripDto.getParticipantUsernames() != null) {
+            Set<User> participants = tripDto.getParticipantUsernames().stream()
+                .map(username -> userRepository.findByUsername(username).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+            trip.getParticipants().addAll(participants);
+        }
 
         Trip savedTrip = tripService.createTrip(trip);
         return ResponseEntity.status(HttpStatus.CREATED).body(tripMapper.toDto(savedTrip));
@@ -246,11 +259,16 @@ public class TripController {
         if (tripOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
         }
-
         Trip trip = tripOpt.get();
         tripMapper.updateEntityFromDto(tripDto, trip);
+        if (tripDto.getParticipantUsernames() != null) {
+            Set<User> participants = tripDto.getParticipantUsernames().stream()
+                .map(username -> userRepository.findByUsername(username).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+            trip.setParticipants(participants);
+        }
         Trip updatedTrip = tripService.updateTrip(trip);
-
         return ResponseEntity.ok(tripMapper.toDto(updatedTrip));
     }
 

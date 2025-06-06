@@ -91,12 +91,22 @@ export function initNavigationBar() {
     usernameSpan.className = 'text-light me-3';
     usernameSpan.style.display = 'none'; // Hidden by default
 
+    // Create a 'My Profile' button
+    const profileBtn = document.createElement('button');
+    profileBtn.className = 'btn btn-outline-light me-3';
+    profileBtn.textContent = 'My Profile';
+    profileBtn.style.display = 'none'; // Hidden by default
+    profileBtn.onclick = () => {
+        window.location.hash = '#profile';
+    };
+
     // Update auth button based on login state
     function updateAuthButton() {
         if (isLoggedIn()) {
             const currentUser = getCurrentUser();
             usernameSpan.textContent = `Currently logged in as: ${currentUser.username}`;
             usernameSpan.style.display = 'inline'; // Show the username
+            profileBtn.style.display = 'inline'; // Show the profile button
             authBtn.textContent = 'Logout';
             authBtn.className = 'btn btn-outline-light me-5';
             authBtn.onclick = () => {
@@ -105,6 +115,7 @@ export function initNavigationBar() {
             };
         } else {
             usernameSpan.style.display = 'none'; // Hide the username
+            profileBtn.style.display = 'none'; // Hide the profile button
             authBtn.textContent = 'Login / Create Account';
             authBtn.className = 'btn btn-outline-light me-5';
             authBtn.onclick = () => {
@@ -116,8 +127,9 @@ export function initNavigationBar() {
     // Initial update of auth button
     updateAuthButton();
 
-    // Add username span and auth button to container
+    // Add username span, profile button, and auth button to container
     authContainer.appendChild(usernameSpan);
+    authContainer.appendChild(profileBtn);
     authContainer.appendChild(authBtn);
 
     // Aufbau der Elemente

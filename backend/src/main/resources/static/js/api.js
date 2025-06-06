@@ -105,3 +105,15 @@ export async function searchPointsOfInterest({ latitude, longitude, radius = 100
   });
   return await fetchJsonOrThrow(`${API_BASE}/locations/poi?${params.toString()}`, {}, 'Failed to fetch POIs');
 }
+
+export async function getBuddiesForUser(username) {
+  return await fetchJsonOrThrow(`/api/users/${username}/buddies`, {}, `Failed to fetch buddies for user ${username}`);
+}
+
+export async function getTripsByOrganizer(userId) {
+  return await fetchJsonOrThrow(`/api/trips/organizer/${userId}`, {}, 'Failed to fetch trips by organizer');
+}
+
+export async function getTripsByParticipant(userId) {
+  return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
+}

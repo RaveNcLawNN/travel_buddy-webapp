@@ -3,8 +3,8 @@
 //=============================================
 
 import { createElement } from "./createElement.js";
-import { getAllTrips, createTrip } from "./api.js";
-import { isLoggedIn } from "./auth.js";
+import { getAllTrips, createTrip, getTripsByOrganizer, getTripsByParticipant } from "./api.js";
+import { isLoggedIn, getCurrentUser } from "./auth.js";
 
 //=============================================
 // MAIN ENTRY POINT: VIEW RENDERER
@@ -36,13 +36,14 @@ export async function loadTrips(page = 1) {
   // Modal Handler: Trip Creation
   newTripBtn.addEventListener("click", () => {
     openTripModal(async (newTrip) => {
+      const currentUser = getCurrentUser();
       const payload = {
         title: newTrip.title,
         description: newTrip.description || "",
         startDate: newTrip.from,
         endDate: newTrip.to,
         destination: newTrip.destination,
-        organizerId: 1, // TODO: mit echten ID's ersetzen sobald Session Handling da ist
+        organizerId: currentUser ? currentUser.id : 1, // Use real user ID
         status: "PLANNING",
         latitude: newTrip.latitude,
         longitude: newTrip.longitude
@@ -64,7 +65,21 @@ export async function loadTrips(page = 1) {
     list.replaceChildren();
     let userTrips = [];
     try {
-      userTrips = await getAllTrips();
+      const currentUser = getCurrentUser();
+      if (!currentUser) throw new Error('No user');
+      // Fetch trips where user is organizer or participant
+      const [organized, participating] = await Promise.all([
+        getTripsByOrganizer(currentUser.id),
+        getTripsByParticipant(currentUser.id)
+      ]);
+      // Merge and deduplicate by trip id
+      const allTrips = [...organized, ...participating];
+      const seen = new Set();
+      userTrips = allTrips.filter(trip => {
+        if (seen.has(trip.id)) return false;
+        seen.add(trip.id);
+        return true;
+      });
     } catch (e) {
       list.appendChild(createElement("p", { className: "text-danger" }, "Fehler beim Laden der Trips."));
       return;
@@ -107,18 +122,23 @@ export async function loadTrips(page = 1) {
   //=============================================
 
   function openTripModal(onCreate) {
-    document.body.style.overflow = "hidden";
-    const overlay = createElement("div", { id: "tripModal", className: "custom-modal" });
-    const dialog = createElement("div", { className: "custom-modal-dialog" });
+    // Remove any existing modal
+    const existing = document.getElementById('tripModal');
+    if (existing) existing.remove();
+
+    // Modal structure
+    const modal = createElement("div", { className: "modal fade", id: "tripModal", tabIndex: -1 });
+    const dialog = createElement("div", { className: "modal-dialog" });
+    const content = createElement("div", { className: "modal-content" });
 
     // Modal Header
-    const header = createElement("div", { className: "custom-modal-header d-flex justify-content-between align-items-center" },
+    const header = createElement("div", { className: "modal-header" },
       createElement("h5", { className: "modal-title" }, "Create New Trip"),
-      createElement("button", { type: "button", className: "btn-close", id: "closeModalBtn", "aria-label": "Close" })
+      createElement("button", { type: "button", className: "btn-close", "data-bs-dismiss": "modal", "aria-label": "Close" })
     );
 
     // Modal Form
-    const body = createElement("div", { className: "custom-modal-body" });
+    const body = createElement("div", { className: "modal-body" });
     const form = createElement("form", { id: "tripForm", className: "d-flex flex-column gap-3" });
 
     const titleGroup = createElement("div", { className: "mb-3" },
@@ -190,24 +210,22 @@ export async function loadTrips(page = 1) {
 
     const errorDiv = createElement("div", { id: "tripError", className: "text-danger mb-2", style: "display:none;" });
 
-    const footer = createElement("div", { className: "custom-modal-footer d-flex justify-content-end gap-2" },
-      createElement("button", { type: "button", className: "btn btn-danger", id: "cancelTripBtn" }, "Cancel"),
-      createElement("button", { type: "submit", className: "btn btn-success" }, "Create")
+    const submitButton = createElement("button", { type: "submit", className: "btn btn-success" }, "Create");
+    form.append(titleGroup, descGroup, destGroup, fromGroup, toGroup, errorDiv, submitButton);
+
+    const footer = createElement("div", { className: "modal-footer" },
+      createElement("button", { type: "button", className: "btn btn-secondary", "data-bs-dismiss": "modal" }, "Cancel")
     );
 
-    form.append(titleGroup, descGroup, destGroup, fromGroup, toGroup, errorDiv, footer);
     body.appendChild(form);
-    dialog.append(header, body);
-    overlay.appendChild(dialog);
-    document.body.appendChild(overlay);
+    content.append(header, body, footer);
+    dialog.appendChild(content);
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
 
-    function closeModal() {
-      overlay.remove();
-      document.body.style.overflow = "";
-    }
-
-    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-    document.getElementById("cancelTripBtn").addEventListener("click", closeModal);
+    // Bootstrap modal instance
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -231,7 +249,7 @@ export async function loadTrips(page = 1) {
 
       errorDiv.style.display = "none";
       onCreate({ title, description, destination, from, to, latitude: selectedLat, longitude: selectedLon });
-      closeModal();
+      bsModal.hide();
     });
   }
 

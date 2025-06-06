@@ -3,10 +3,11 @@
 //=============================================
 
 import { createElement } from "./createElement.js";
-import { getTripById, deleteTrip, updateTrip } from "./api.js";
+import { getTripById, deleteTrip, updateTrip, getBuddiesForUser } from "./api.js";
 import { getLocationsByTrip, createLocation, updateLocation, deleteLocation } from "./api.js";
 import { openAddLocationForm, openEditLocationForm } from "./locationModal.js";
 import { openEditTripForm } from "./tripModal.js";
+import { getCurrentUser } from "./auth.js";
 
 //=============================================
 // MAIN EXPORT
@@ -31,10 +32,36 @@ export async function loadTripDetail(id) {
   }
 
   //=============================================
+  // 1.5) CHECK USER PERMISSION
+  //=============================================
+  const currentUser = getCurrentUser();
+  const isOrganizer = trip.organizerId && currentUser && trip.organizerId === currentUser.id;
+  const isParticipant = (trip.participantUsernames || []).includes(currentUser?.username);
+  if (!isOrganizer && !isParticipant) {
+    app.appendChild(createElement("div", { className: "alert alert-warning" }, "You do not have access to this trip."));
+    return;
+  }
+
+  //=============================================
   // 2) CONTAINER BUILD
   //=============================================
 
   const container = createElement("div", { className: "container py-5" });
+
+  // Buddies for this trip (only actual buddies)
+  let buddies = [];
+  if (currentUser) {
+    const allBuddies = await getBuddiesForUser(currentUser.username);
+    const buddyUsernames = allBuddies.map(b => b.username);
+    buddies = (trip.participantUsernames || []).filter(u => buddyUsernames.includes(u));
+  }
+  const buddiesSection = createElement("div", { className: "mb-3" },
+    createElement("label", { className: "form-label" }, "Buddies for this trip:"),
+    buddies.length
+      ? createElement("div", {}, ...buddies.map(u => createElement("span", { className: "badge bg-info text-dark me-1" }, u)))
+      : createElement("span", { className: "text-muted" }, "No buddies added yet.")
+  );
+  container.appendChild(buddiesSection);
 
   // Header: Title, Date, Status, Delete-Btn, Edit-Btn
   const header = createElement("div", { className: "d-flex justify-content-between align-items-center mb-4" },

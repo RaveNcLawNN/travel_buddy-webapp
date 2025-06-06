@@ -12,3 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initFooterBar();
     route();
 });
+
+// Universal modal closing solution for Bootstrap modals
+function closeAllModals() {
+  const openModals = document.querySelectorAll('.modal.show');
+  openModals.forEach(modal => {
+    const modalInstance = bootstrap.Modal.getInstance(modal);
+    if (modalInstance) {
+      modalInstance.hide();
+    }
+    modal.remove();
+  });
+}
+
+// Attach modal closing to navigation events
+window.addEventListener('popstate', closeAllModals);

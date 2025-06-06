@@ -217,7 +217,7 @@ public class UserController {
         System.out.println("User found: " + (loginUser != null));
 
         if (loginUser != null && passwordEncoder.matches(loginDto.getPassword(), loginUser.getPassword())) {
-            String token = jwtUtil.generateToken(loginUser);
+                String token = jwtUtil.generateToken(loginUser);
             return ResponseEntity.ok(token);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
@@ -285,7 +285,7 @@ public class UserController {
             return ResponseEntity.ok(buddyDtos);
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            }
     }
 
     @Operation(summary = "Get pending buddy requests", description = "Retrieves all pending buddy requests for a user.")

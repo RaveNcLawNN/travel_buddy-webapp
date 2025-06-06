@@ -19,7 +19,7 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    public final UserRepository userRepository;
     private final BuddyRepository buddyRepository;
     private final PasswordEncoder passwordEncoder;
 
