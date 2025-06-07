@@ -3,7 +3,7 @@
 //=============================================
 
 import { createElement } from "./createElement.js";
-import { getAllTrips, createTrip, getTripsByOrganizer, getTripsByParticipant } from "./api.js";
+import { getAllTrips, createTrip, getTripsByOrganizer, getTripsByParticipant, searchLocation } from "./api.js";
 import { isLoggedIn, getCurrentUser } from "./auth.js";
 
 //=============================================
@@ -227,7 +227,7 @@ export async function loadTrips(page = 1) {
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const title = document.getElementById("tripTitle").value.trim();
       const description = document.getElementById("tripDescription").value.trim();
@@ -248,7 +248,28 @@ export async function loadTrips(page = 1) {
       }
 
       errorDiv.style.display = "none";
-      onCreate({ title, description, destination, from, to, latitude: selectedLat, longitude: selectedLon });
+
+      let latitude, longitude;
+      try {
+        const results = await searchLocation(destination);
+        if (results.length === 0) throw new Error();
+        latitude = results[0].latitude;
+        longitude = results[0].longitude;
+      } catch {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "Could not geocode destination.";
+        return;
+      }
+
+      onCreate({
+        title,
+        description,
+        destination,
+        from,
+        to,
+        latitude,
+        longitude
+      });
       bsModal.hide();
     });
   }
