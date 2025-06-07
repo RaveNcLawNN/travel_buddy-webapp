@@ -266,6 +266,7 @@ public class TripController {
                 .map(username -> userRepository.findByUsername(username).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+            participants.add(trip.getOrganizer());
             trip.setParticipants(participants);
         }
         Trip updatedTrip = tripService.updateTrip(trip);

@@ -43,6 +43,8 @@ public class TripDto {
     @NotNull(message = "Organizer ID is required")
     private Long organizerId;
 
+    private String organizerUsername;
+
     private TripStatus status;
 
     private Double latitude;

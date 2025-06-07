@@ -57,17 +57,15 @@ export async function loadTripDetail(id) {
 
   const container = createElement("div", { className: "container py-5" });
 
-  // Buddies for this trip (only actual buddies)
-  let buddies = [];
-  if (currentUser) {
-    const allBuddies = await getBuddiesForUser(currentUser.username);
-    const buddyUsernames = allBuddies.map(b => b.username);
-    buddies = (trip.participantUsernames || []).filter(u => buddyUsernames.includes(u));
-  }
+  // Buddies for this trip (all participants)
+  const buddies = trip.participantUsernames || [];
   const buddiesSection = createElement("div", { className: "mb-3" },
     createElement("label", { className: "form-label" }, "Buddies for this trip:"),
     buddies.length
-      ? createElement("div", {}, ...buddies.map(u => createElement("span", { className: "badge bg-info text-dark me-1" }, u)))
+      ? createElement("div", {}, ...buddies.map(u => createElement("span", { 
+          className: `badge ${u === currentUser?.username ? 'bg-danger' : 'bg-info'} text-white me-1`,
+          title: u === trip.organizerUsername ? "Trip Organizer" : ""
+        }, u === currentUser?.username ? `${u} (You)` : u)))
       : createElement("span", { className: "text-muted" }, "No buddies added yet.")
   );
   container.appendChild(buddiesSection);

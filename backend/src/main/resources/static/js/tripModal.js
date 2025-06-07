@@ -35,7 +35,11 @@ export function openEditTripForm(trip, onSubmitCallback) {
 
     // Body & Form
     const body = createElement("div", { className: "modal-body" });
-    const form = createElement("form", { id: "editTripForm", className: "d-flex flex-column gap-3" });
+    const form = createElement("form", { 
+        id: "editTripForm", 
+        className: "d-flex flex-column gap-3",
+        onsubmit: "return false;" // Prevent default form submission
+    });
 
     const title = createElement("input", { type: "text", className: "form-control", id: "tripTitle", value: trip.title || "", required: true });
     const destination = createElement("input", { type: "text", className: "form-control", id: "tripDestination", value: trip.destination || "", required: true });
@@ -75,15 +79,29 @@ export function openEditTripForm(trip, onSubmitCallback) {
         const currentUser = getCurrentUser();
         if (!currentUser) return;
         const buddies = await getBuddiesForUser(currentUser.username);
-        // Modal overlay
-        const buddyOverlay = createElement("div", { className: "custom-modal" });
-        const buddyDialog = createElement("div", { className: "custom-modal-dialog" });
-        const buddyHeader = createElement("div", { className: "custom-modal-header d-flex justify-content-between align-items-center" },
+        
+        // Create Bootstrap modal for buddy selection
+        const buddyModal = createElement("div", { 
+            className: "modal fade", 
+            id: "buddySelectModal",
+            tabIndex: -1
+        });
+        const buddyDialog = createElement("div", { className: "modal-dialog" });
+        const buddyContent = createElement("div", { className: "modal-content" });
+        
+        const buddyHeader = createElement("div", { className: "modal-header" },
             createElement("h5", { className: "modal-title" }, "Select Buddies"),
-            createElement("button", { type: "button", className: "btn-close", id: "closeBuddySelectBtn", "aria-label": "Close" })
+            createElement("button", { 
+                type: "button", 
+                className: "btn-close", 
+                "data-bs-dismiss": "modal",
+                "aria-label": "Close" 
+            })
         );
-        const buddyBody = createElement("div", { className: "custom-modal-body" });
+        
+        const buddyBody = createElement("div", { className: "modal-body" });
         const buddyForm = createElement("form", { className: "d-flex flex-column gap-2" });
+        
         // List of checkboxes
         buddies.forEach(buddy => {
             const checkbox = createElement("input", {
@@ -97,23 +115,44 @@ export function openEditTripForm(trip, onSubmitCallback) {
             const group = createElement("div", { className: "form-check" }, checkbox, label);
             buddyForm.appendChild(group);
         });
+        
         buddyBody.appendChild(buddyForm);
-        const buddyFooter = createElement("div", { className: "custom-modal-footer d-flex justify-content-end gap-2" },
-            createElement("button", { type: "button", className: "btn btn-secondary", id: "cancelBuddySelectBtn" }, "Cancel"),
-            createElement("button", { type: "button", className: "btn btn-success", id: "confirmBuddySelectBtn" }, "Confirm")
+        
+        const buddyFooter = createElement("div", { className: "modal-footer" },
+            createElement("button", { 
+                type: "button", 
+                className: "btn btn-secondary", 
+                "data-bs-dismiss": "modal"
+            }, "Cancel"),
+            createElement("button", { 
+                type: "button", 
+                className: "btn btn-success", 
+                id: "confirmBuddySelectBtn"
+            }, "Confirm")
         );
-        buddyDialog.append(buddyHeader, buddyBody, buddyFooter);
-        buddyOverlay.appendChild(buddyDialog);
-        document.body.appendChild(buddyOverlay);
+        
+        buddyContent.append(buddyHeader, buddyBody, buddyFooter);
+        buddyDialog.appendChild(buddyContent);
+        buddyModal.appendChild(buddyDialog);
+        document.body.appendChild(buddyModal);
+        
+        // Initialize Bootstrap modal
+        const bsBuddyModal = new bootstrap.Modal(buddyModal);
+        bsBuddyModal.show();
+        
         // Event handlers
-        document.getElementById("closeBuddySelectBtn").onclick = () => buddyOverlay.remove();
-        document.getElementById("cancelBuddySelectBtn").onclick = () => buddyOverlay.remove();
         document.getElementById("confirmBuddySelectBtn").onclick = () => {
             // Collect selected buddies
             selectedBuddies = Array.from(buddyForm.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
             renderSelectedBuddies();
-            buddyOverlay.remove();
+            bsBuddyModal.hide();
+            buddyModal.remove();
         };
+        
+        // Clean up when modal is hidden
+        buddyModal.addEventListener('hidden.bs.modal', () => {
+            buddyModal.remove();
+        });
     };
 
     // Footer
@@ -123,7 +162,11 @@ export function openEditTripForm(trip, onSubmitCallback) {
             className: "btn btn-secondary", 
             "data-bs-dismiss": "modal"
         }, "Cancel"),
-        createElement("button", { type: "submit", className: "btn btn-success" }, "Save")
+        createElement("button", { 
+            type: "submit", 
+            className: "btn btn-success",
+            id: "saveTripBtn"
+        }, "Save")
     );
 
     form.append(
@@ -133,11 +176,12 @@ export function openEditTripForm(trip, onSubmitCallback) {
         createFormGroup("End Date", endDate),
         createFormGroup("Status", status),
         buddiesSection,
-        errorDiv
+        errorDiv,
+        footer
     );
 
     body.appendChild(form);
-    content.append(header, body, footer);
+    content.append(header, body);
     dialog.appendChild(content);
     modal.appendChild(dialog);
     document.body.appendChild(modal);
@@ -146,23 +190,15 @@ export function openEditTripForm(trip, onSubmitCallback) {
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 
-//=============================================
-// MODAL EVENT HANDLERS
-//=============================================
-
-    function closeModal() {
-        bsModal.hide();
-        modal.remove();
-        document.body.style.overflow = "";
-    }
-
-    modal.addEventListener('hidden.bs.modal', () => {
-        modal.remove();
-        document.body.style.overflow = "";
-    });
-
-    form.addEventListener("submit", async (e) => {
+    // Form submission handler
+    form.onsubmit = async (e) => {
         e.preventDefault();
+        console.log("Form submitted");
+
+        const saveBtn = document.getElementById("saveTripBtn");
+        const originalBtnText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
 
         const updatedTrip = {
             ...trip,
@@ -171,38 +207,60 @@ export function openEditTripForm(trip, onSubmitCallback) {
             startDate: startDate.value,
             endDate: endDate.value,
             status: status.value,
-            participantUsernames: selectedBuddies
+            participantUsernames: [...(trip.participantUsernames || []), ...selectedBuddies]
         };
 
         if (!updatedTrip.title || !updatedTrip.destination || !updatedTrip.startDate || !updatedTrip.endDate || !updatedTrip.status) {
             errorDiv.textContent = "All fields are required.";
             errorDiv.style.display = "block";
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalBtnText;
             return;
         }
 
         try {
-            // Geolookup: Fetch coordinates using the new destination
-            const geoResults = await searchLocation(updatedTrip.destination);
-
-            if (!geoResults.length) {
-                errorDiv.textContent = "Unable to find coordinates for the destination.";
-                errorDiv.style.display = "block";
-                return;
+            // Only geocode if destination has changed
+            if (updatedTrip.destination !== trip.destination) {
+                const geoResults = await searchLocation(updatedTrip.destination);
+                if (!geoResults.length) {
+                    errorDiv.textContent = "Unable to find coordinates for the destination.";
+                    errorDiv.style.display = "block";
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalBtnText;
+                    return;
+                }
+                const { latitude, longitude } = geoResults[0];
+                updatedTrip.latitude = latitude;
+                updatedTrip.longitude = longitude;
             }
-
-            const { latitude, longitude } = geoResults[0];
-            updatedTrip.latitude = latitude;
-            updatedTrip.longitude = longitude;
 
             // Send updated trip to BE
             console.log("Sending updated trip:", updatedTrip);
             await updateTrip(updatedTrip.id, updatedTrip);
 
-            closeModal();
-            onSubmitCallback();
+            // Hide the modal using Bootstrap's modal instance
+            bsModal.hide();
+            
+            // Clean up after modal is hidden
+            modal.addEventListener('hidden.bs.modal', () => {
+                modal.remove();
+                document.body.style.overflow = "";
+                if (typeof onSubmitCallback === "function") {
+                    onSubmitCallback();
+                }
+            }, { once: true });
         } catch (err) {
+            console.error("Error updating trip:", err);
             alert("Failed to update trip: " + err.message);
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalBtnText;
         }
+    };
+
+    // Clean up when modal is hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+        document.body.style.overflow = "";
     });
 }
 

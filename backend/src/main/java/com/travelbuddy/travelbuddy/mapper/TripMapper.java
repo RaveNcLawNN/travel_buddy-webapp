@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public interface TripMapper {
     
     @Mapping(target = "organizerId", source = "organizer.id")
+    @Mapping(target = "organizerUsername", source = "organizer.username")
     @Mapping(target = "latitude", source = "latitude")
     @Mapping(target = "longitude", source = "longitude")
     @Mapping(target = "locations", source = "locations")
