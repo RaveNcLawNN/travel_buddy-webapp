@@ -57,7 +57,9 @@ export function openAddLocationForm(tripId, onSubmitCallback) {
         }
         try {
             await createLocation(tripId, { ...data, tripId });
-            onSubmitCallback();
+            if (typeof onSubmitCallback === "function") {
+                await onSubmitCallback();
+            }
             closeModal();
         } catch (e) {
             alert("Error creating location: " + e.message);
@@ -106,7 +108,8 @@ export function openEditLocationForm(location, tripId, onSubmitCallback) {
     document.getElementById("closeEditLocBtn").addEventListener("click", closeModal);
     document.getElementById("cancelEditLocBtn").addEventListener("click", closeModal);
 
-    form.addEventListener("submit", async (e) => { e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
         const data = fields.getData();
         if (!data) {
             errorDiv.style.display = "block";
@@ -115,7 +118,9 @@ export function openEditLocationForm(location, tripId, onSubmitCallback) {
         }
         try {
             await updateLocation(location.id, { ...data, id: location.id, tripId });
-            onSubmitCallback();
+            if (typeof onSubmitCallback === "function") {
+                await onSubmitCallback();
+            }
             closeModal();
         } catch (e) {
             alert("Error updating location: " + e.message);

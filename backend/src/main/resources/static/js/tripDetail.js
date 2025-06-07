@@ -3,17 +3,21 @@
 //=============================================
 
 import { createElement } from "./createElement.js";
-import { getTripById, deleteTrip, updateTrip, getBuddiesForUser } from "./api.js";
-import { getLocationsByTrip, createLocation, updateLocation, deleteLocation } from "./api.js";
 import { openAddLocationForm, openEditLocationForm } from "./locationModal.js";
 import { openEditTripForm } from "./tripModal.js";
 import { getCurrentUser } from "./auth.js";
+import { addPoiFilterPanel, setMapMarker, clearMapMarkers } from "./map.js";
+import {getTripById, deleteTrip, updateTrip, getBuddiesForUser, getLocationsByTrip, createLocation, updateLocation, deleteLocation, searchPointsOfInterest } from "./api.js";
 
 //=============================================
 // MAIN EXPORT
 //=============================================
 
 export async function loadTripDetail(id) {
+  let poiMarkers = [];
+  let currentTypes = [];
+  let currentRadius = 1000;
+
   const app = document.getElementById("app");
   if (!app) return;
   app.replaceChildren();
@@ -30,6 +34,11 @@ export async function loadTripDetail(id) {
     app.appendChild(createElement("div", {}, "Trip not found."));
     return;
   }
+
+  let tripCoords = {
+    lat: trip.latitude,
+    lon: trip.longitude
+  };
 
   //=============================================
   // 1.5) CHECK USER PERMISSION
@@ -121,42 +130,113 @@ export async function loadTripDetail(id) {
   }
 
   // Initialize Map
-  function initMapWithLocations(locations) {
-    if (window.tripDetailMap) {
-      window.tripDetailMap.remove();
-    }
-    let mapCenter = [0, 0];
-    let zoom = 2;
-    if (locations.length > 0) {
-      mapCenter = [locations[0].latitude, locations[0].longitude];
-      zoom = 13;
-    } else if (trip.latitude && trip.longitude) {
-      mapCenter = [trip.latitude, trip.longitude];
-      zoom = 13;
-    }
-    const map = L.map("trip-map").setView(mapCenter, zoom);
-    window.tripDetailMap = map;
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+  async function initMapWithLocations(locations) {
+  if (window.tripDetailMap) {
+    window.tripDetailMap.remove();
+  }
 
-    // Always add the trip's city marker if coordinates exist
-    if (trip.latitude && trip.longitude) {
-      L.marker([trip.latitude, trip.longitude])
-        .addTo(map)
-        .bindPopup(`<strong>${trip.destination}</strong><br>(Destination)`);
-    }
+  let mapCenter = [0, 0];
+  let zoom = 2;
+  if (locations.length > 0) {
+    mapCenter = [locations[0].latitude, locations[0].longitude];
+    zoom = 13;
+  } else if (trip.latitude && trip.longitude) {
+    mapCenter = [trip.latitude, trip.longitude];
+    zoom = 13;
+  }
 
-    if (locations.length > 0) {
-      const bounds = [];
-      locations.forEach((loc) => {
-        L.marker([loc.latitude, loc.longitude])
-          .addTo(map)
-          .bindPopup(`<strong>${loc.name}</strong><br>${loc.address || ""}`);
-        bounds.push([loc.latitude, loc.longitude]);
+  const map = L.map("trip-map").setView(mapCenter, zoom);
+  window.tripDetailMap = map;
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  const tripCoords = { lat: trip.latitude, lon: trip.longitude };
+  if (trip.latitude && trip.longitude) {
+    L.marker([trip.latitude, trip.longitude])
+      .addTo(map)
+      .bindPopup(`<strong>${trip.destination}</strong><br>(Destination)`);
+  }
+
+  let poiMarkers = [];
+  let currentTypes = [];
+  let currentRadius = 1000;
+
+  addPoiFilterPanel(map, (selectedTypes, radius) => {
+    currentTypes = selectedTypes;
+    currentRadius = radius;
+    loadPois(tripCoords.lat, tripCoords.lon);
+  });
+
+  // Hilfsfunk­tion zum Laden und Darstellen der POIs
+  async function loadPois(lat, lon) {
+    poiMarkers = clearMapMarkers(map, poiMarkers);
+    if (!currentTypes.length) return;
+
+    try {
+      const pois = await searchPointsOfInterest({
+        latitude: lat,
+        longitude: lon,
+        radius: currentRadius,
+        types: currentTypes
       });
-      bounds.push([trip.latitude, trip.longitude]); // include city marker in bounds
-      map.fitBounds(bounds, { padding: [50, 50] });
+
+      pois.forEach(poi => {
+        const popupContent = `
+          <strong>${poi.name}</strong><br>
+          Type: ${poi.type}<br>
+          Address: ${poi.address || '–'}<br>
+          <button
+            class="btn btn-sm btn-primary add-poi-btn"
+            data-name="${encodeURIComponent(poi.name)}"
+            data-lat="${poi.latitude}"
+            data-lon="${poi.longitude}"
+            data-type="${encodeURIComponent(poi.type)}"
+            data-address="${encodeURIComponent(poi.address || '')}"
+          >Add to Trip</button>
+        `;
+        const marker = setMapMarker(
+          map,
+          poi.latitude,
+          poi.longitude,
+          popupContent,
+          null,
+          (poi.type || "default").toLowerCase()
+        );
+        poiMarkers.push(marker);
+      });
+    } catch (err) {
+      console.error("Failed to load POIs:", err);
     }
   }
+
+  // Event-Listener für „Add to Trip“-Buttons in Popups
+  map.on("popupopen", e => {
+    const btn = e.popup._contentNode.querySelector(".add-poi-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+      const payload = {
+        name: decodeURIComponent(btn.dataset.name),
+        latitude: parseFloat(btn.dataset.lat),
+        longitude: parseFloat(btn.dataset.lon),
+        type: decodeURIComponent(btn.dataset.type),
+        address: decodeURIComponent(btn.dataset.address)
+      };
+
+      try {
+        await createLocation(trip.id, payload);
+        await loadAndRenderLocations();
+        map.closePopup();
+      } catch (err) {
+        alert("Error adding location: " + err.message);
+      }
+    });
+  });
+
+  // Initialer POI-Load (wird erst nach Filter-Auswahl wirklich aktive Marker setzen)
+  loadPois(tripCoords.lat, tripCoords.lon);
+}
 
   // Render Location-List
   function renderLocationsList(locations) {
@@ -173,7 +253,8 @@ export async function loadTripDetail(id) {
             createElement("br"), `Lat: ${loc.latitude}, Lon: ${loc.longitude}`,
             createElement("br"), `Address: ${loc.address || ""}`),
           createElement("p", { className: "card-text" }, loc.description || ""),
-          createElement("button", { className: "btn btn-sm btn-warning me-2", onclick: () => openEditLocationForm(loc) }, "Edit"),
+          createElement("button", { className: "btn btn-sm btn-warning me-2", 
+            onclick: () => openEditLocationForm(loc, trip.id, async () => { await loadAndRenderLocations(); }) }, "Edit"),
           createElement("button", { className: "btn btn-sm btn-danger", onclick: () => onDeleteLocation(loc.id) }, "Delete"))
       );
       locationsListDiv.appendChild(card);
