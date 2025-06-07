@@ -5,6 +5,7 @@ import com.travelbuddy.travelbuddy.model.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * Repository interface for Location entities.
  * Provides CRUD operations and custom queries for Location objects.
  */
+@Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
     
     /**
@@ -33,4 +35,6 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
         @Param("lon") Double longitude,
         @Param("radius") Double radiusInKm
     );
+
+    boolean existsByNameAndTrip(String name, Trip trip);
 } 

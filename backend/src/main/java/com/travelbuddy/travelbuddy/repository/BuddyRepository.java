@@ -5,10 +5,12 @@ import com.travelbuddy.travelbuddy.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface BuddyRepository extends JpaRepository<Buddy, Long> {
     
     @Query("SELECT b FROM Buddy b WHERE (b.user = :user AND b.buddy = :buddy) OR (b.user = :buddy AND b.buddy = :user)")
@@ -22,4 +24,6 @@ public interface BuddyRepository extends JpaRepository<Buddy, Long> {
     
     @Query("SELECT b FROM Buddy b WHERE b.user = :user AND b.accepted = false")
     List<Buddy> findSentBuddyRequests(@Param("user") User user);
+
+    boolean existsByUserAndBuddy(User user, User buddy);
 } 
