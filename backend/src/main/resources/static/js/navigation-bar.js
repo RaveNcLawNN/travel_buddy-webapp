@@ -24,11 +24,11 @@ export function initNavigationBar() {
     const container = document.createElement('div');
     container.className = 'container-fluid';
 
-    // Link: TravelApp (führt zur Landing Page)
-    const travelapp = document.createElement('a');
-    travelapp.className = 'navbar-brand ms-5';
-    travelapp.href = '#home';
-    travelapp.textContent = 'TravelApp';
+    // Link: TravelBuddy (führt zur Landing Page)
+    const travelbuddy = document.createElement('a');
+    travelbuddy.className = 'navbar-brand ms-5';
+    travelbuddy.href = '#home';
+    travelbuddy.textContent = 'TravelBuddy';
 
     // Toggler-Button für die mobile Ansicht (zeigen/verstecken von Menüpunkten)
     const toggler = document.createElement('button');
@@ -135,7 +135,7 @@ export function initNavigationBar() {
     // Aufbau der Elemente
     collapse.appendChild(ul);               // Links
     collapse.appendChild(authContainer);    // Auth section (username + button)
-    container.appendChild(travelapp);       // Überschrift
+    container.appendChild(travelbuddy);       // Überschrift
     container.appendChild(toggler);         // Toggler
     container.appendChild(collapse);        // Collapse-Bereich
     nav.appendChild(container);             // Navbar-Container
