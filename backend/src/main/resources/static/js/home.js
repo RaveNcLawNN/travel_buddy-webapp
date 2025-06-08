@@ -29,8 +29,15 @@ function createHeroSection(onSearch) {
 //=============================================
 
 function createMapContainer() {
-  const mapContainer = createElement('section', { id: 'map' });
-  return mapContainer;
+  const wrapper = createElement('section', { id: 'map-container' });
+  const mapDiv = createElement('div', { id: 'map' });
+  const sidePanel = createElement('div', { id: 'map-sidebar' });
+
+  sidePanel.appendChild(createElement('h5', {}, 'Sidebar Panel'));
+  sidePanel.appendChild(createElement('p', {}, 'You can add filters, highlights, or anything else.'));
+
+  wrapper.append(mapDiv, sidePanel);
+  return wrapper;
 }
 
 //=============================================
@@ -55,6 +62,15 @@ export async function loadHome() {
   //=============================================
 
   const map = createMap('map', [20, 0], 2);
+
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 0);
+
+  window.addEventListener('resize', () => {
+    map.invalidateSize();
+  });
+
   let cityMarker = null;
   let poiMarkers = [];
   let currentCoords = null;

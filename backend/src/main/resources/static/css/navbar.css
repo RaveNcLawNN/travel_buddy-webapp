@@ -7,3 +7,7 @@
     font-weight: bold !important;
     text-decoration: underline !important;
 }
+
+.nav-item {
+    font-size: 1.1rem;
+}

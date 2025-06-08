@@ -28,7 +28,14 @@ export function initNavigationBar() {
     const travelbuddy = document.createElement('a');
     travelbuddy.className = 'navbar-brand ms-4';
     travelbuddy.href = '#home';
-    travelbuddy.textContent = 'TravelBuddy';
+    
+    const logo = document.createElement('img');
+    logo.src = '/images/logo.png'
+    logo.alt = 'TravelBuddy Logo';
+    logo.style.height = '50px';
+    logo.style.objectFit = 'contain';
+
+    travelbuddy.appendChild(logo);
 
     // Toggler-Button für die mobile Ansicht (zeigen/verstecken von Menüpunkten)
     const toggler = document.createElement('button');
@@ -61,7 +68,6 @@ export function initNavigationBar() {
         { href: '#home', label: 'Home' },
         { href: '#trips', label: 'My Trips' },
         { href: '#buddies', label: 'My Buddies' },
-        { href: '#about', label: 'About' },
         { href: '#profile', label: 'My Profile', protected: true }
     ];
 
