@@ -6,8 +6,10 @@ import { loadBuddies } from './buddies.js';
 import { loadProfile } from './profile.js';
 
 export function route() {
-    const view = (location.hash.replace('#', '').trim().toLowerCase()) || 'home';
-    console.log('Routing to view:', view);
+    const rawHash = location.hash.replace('#', '').trim().toLowerCase();
+    const [path, queryString] = rawHash.split('?');
+    const view = path || 'home';
+    const queryParams = new URLSearchParams(queryString);
 
     if (view.startsWith('trip/')) {
         const id = view.split('/')[1];
@@ -20,7 +22,8 @@ export function route() {
             loadHome();
             break;
         case 'trips':
-            loadTrips();
+            const page = parseInt(queryParams.get('page') || '1', 10);
+            loadTrips(page);
             break;
         case 'buddies':
             loadBuddies();
@@ -45,8 +48,6 @@ export function initRouter() {
     };
 
     function handleRoute() {
-        const hash = window.location.hash.slice(1) || 'home';
-        const route = routes[hash] || routes['home'];
         route();
     }
 

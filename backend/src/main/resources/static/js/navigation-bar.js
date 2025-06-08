@@ -14,8 +14,8 @@ export function initNavigationBar() {
     }
 
     // Clear the current content to prevent duplicate navbars
-    navbar.innerHTML = '';
-    
+    navbar.replaceChildren();
+
     // <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     const nav = document.createElement('nav');
     nav.className = 'navbar navbar-expand-lg navbar-dark bg-dark';
@@ -26,14 +26,14 @@ export function initNavigationBar() {
 
     // Link: TravelBuddy (führt zur Landing Page)
     const travelbuddy = document.createElement('a');
-    travelbuddy.className = 'navbar-brand ms-5';
+    travelbuddy.className = 'navbar-brand ms-4';
     travelbuddy.href = '#home';
     travelbuddy.textContent = 'TravelBuddy';
 
     // Toggler-Button für die mobile Ansicht (zeigen/verstecken von Menüpunkten)
     const toggler = document.createElement('button');
     toggler.className = 'navbar-toggler';
-    toggler.setAttribute('type', 'button');
+    toggler.type = 'button';
     toggler.setAttribute('data-bs-toggle', 'collapse');
     toggler.setAttribute('data-bs-target', '#navbarNav');
     toggler.setAttribute('aria-controls', 'navbarNav');
@@ -50,16 +50,19 @@ export function initNavigationBar() {
     collapse.className = 'collapse navbar-collapse';
     collapse.id = 'navbarNav';
 
-    // Liste der Navigationslinks
-    const ul = document.createElement('ul');
-    ul.className = 'navbar-nav me-auto mb-2 mb-lg-0';
+    // Left-side navigation
+    const leftUl = document.createElement('ul');
+    leftUl.className = 'navbar-nav mb-2 mb-lg-0';
+
+    let profileLink = null;
 
     // Navigationspunkte
     const navItems = [
         { href: '#home', label: 'Home' },
         { href: '#trips', label: 'My Trips' },
         { href: '#buddies', label: 'My Buddies' },
-        { href: '#about', label: 'About' }
+        { href: '#about', label: 'About' },
+        { href: '#profile', label: 'My Profile', protected: true }
     ];
 
     // Erstellung von den einzelnen Navigationspunkten
@@ -72,72 +75,63 @@ export function initNavigationBar() {
         a.href = item.href;
         a.textContent = item.label;
 
+        if (item.protected) {
+            a.style.display = 'none';
+            profileLink = a;
+        }
+
         li.appendChild(a);
-        ul.appendChild(li);
+        leftUl.appendChild(li);
     });
 
+    // Right-side navigation (Logout/Login)
+    const rightUl = document.createElement('ul');
+    rightUl.className = 'navbar-nav ms-auto mb-2 mb-lg-0';
+
     // Login/Logout Button
-    const authBtn = document.createElement('button');
-    authBtn.className = 'btn btn-outline-light me-5';
-    authBtn.id = 'authBtn';
-    authBtn.type = 'button';
+    const authLi = document.createElement('li');
+    authLi.className = 'nav-item me-4';
 
-    // Create a container for the auth section
-    const authContainer = document.createElement('div');
-    authContainer.className = 'd-flex align-items-center';
+    const authLink = document.createElement('a');
+    authLink.className = 'nav-link';
+    authLink.href = '#';
+    authLink.id = 'authLink';
 
-    // Create a span for the username
-    const usernameSpan = document.createElement('span');
-    usernameSpan.className = 'text-light me-3';
-    usernameSpan.style.display = 'none'; // Hidden by default
-
-    // Create a 'My Profile' button
-    const profileBtn = document.createElement('button');
-    profileBtn.className = 'btn btn-outline-light me-3';
-    profileBtn.textContent = 'My Profile';
-    profileBtn.style.display = 'none'; // Hidden by default
-    profileBtn.onclick = () => {
-        window.location.hash = '#profile';
-    };
+    authLi.appendChild(authLink);
+    rightUl.appendChild(authLi);
 
     // Update auth button based on login state
     function updateAuthButton() {
         if (isLoggedIn()) {
-            const currentUser = getCurrentUser();
-            usernameSpan.textContent = `Currently logged in as: ${currentUser.username}`;
-            usernameSpan.style.display = 'inline'; // Show the username
-            profileBtn.style.display = 'inline'; // Show the profile button
-            authBtn.textContent = 'Logout';
-            authBtn.className = 'btn btn-outline-light me-5';
-            authBtn.onclick = () => {
+            authLink.textContent = 'Logout';
+            authLink.onclick = (e) => {
+                e.preventDefault();
                 logout();
-                updateAuthButton();
+                initNavigationBar();
             };
+            
+            if (profileLink) profileLink.style.display = '';
         } else {
-            usernameSpan.style.display = 'none'; // Hide the username
-            profileBtn.style.display = 'none'; // Hide the profile button
-            authBtn.textContent = 'Login / Create Account';
-            authBtn.className = 'btn btn-outline-light me-5';
-            authBtn.onclick = () => {
+            authLink.textContent = 'Login / Create Account';
+            authLink.onclick = (e) => {
+                e.preventDefault();
                 showLoginModal();
             };
+
+            if (profileLink) profileLink.style.display = 'none';
         }
     }
 
     // Initial update of auth button
     updateAuthButton();
 
-    // Add username span, profile button, and auth button to container
-    authContainer.appendChild(usernameSpan);
-    authContainer.appendChild(profileBtn);
-    authContainer.appendChild(authBtn);
 
     // Aufbau der Elemente
-    collapse.appendChild(ul);               // Links
-    collapse.appendChild(authContainer);    // Auth section (username + button)
-    container.appendChild(travelbuddy);       // Überschrift
-    container.appendChild(toggler);         // Toggler
-    container.appendChild(collapse);        // Collapse-Bereich
-    nav.appendChild(container);             // Navbar-Container
-    navbar.appendChild(nav);                // Alles in das navbar div (im HTML)
+    collapse.appendChild(leftUl);
+    collapse.appendChild(rightUl);
+    container.appendChild(travelbuddy);
+    container.appendChild(toggler);
+    container.appendChild(collapse);
+    nav.appendChild(container);
+    navbar.appendChild(nav);
 }

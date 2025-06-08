@@ -24,8 +24,8 @@ export async function loadTrips(page = 1) {
 
   // Layout: Header + Button
   const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
-  const heading = createElement("h2", { className: "display-5 fw-bold text-center mb-spacing" }, "My Trips");
-  const newTripBtn = createElement("button", { className: "btn btn-success mb-4" }, "+");
+  const heading = createElement("h2", { className: "my-trips-heading" }, "🌍 My Trips");
+  const newTripBtn = createElement("button", { className: "trip-add-btn" }, "+");
   container.append(heading, newTripBtn);
 
   // Trip List
@@ -85,7 +85,7 @@ export async function loadTrips(page = 1) {
       return;
     }
 
-    const tripsPerPage = 5;
+    const tripsPerPage = 4;
     const totalPages = Math.ceil(userTrips.length / tripsPerPage);
     page = Math.min(Math.max(page, 1), totalPages);
 
