@@ -117,3 +117,22 @@ export async function getTripsByOrganizer(userId) {
 export async function getTripsByParticipant(userId) {
   return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
 }
+
+//=============================================
+// WEATHER
+//=============================================
+
+export async function getWeather(latitude, longitude) {
+  const params = new URLSearchParams({
+    latitude: latitude.toString(),
+    longitude: longitude.toString(),
+  }).toString();
+
+  const data = await fetchJsonOrThrow(
+    `${API_BASE}/weather/forecast?${params}`,
+    {},
+    `Failed to fetch weather for (${latitude}, ${longitude})`
+  );
+
+  return data.currentWeather;
+}
