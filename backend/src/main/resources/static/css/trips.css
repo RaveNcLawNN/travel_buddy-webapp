@@ -1,9 +1,5 @@
 /* trips.css */
 
-:root {
-    --tb-spacing: 3rem;
-}
-
 .trip-view {
     min-height: 100vh;
     padding: var(--tb-spacing) 1rem;

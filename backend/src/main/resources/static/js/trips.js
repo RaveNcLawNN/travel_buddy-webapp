@@ -23,7 +23,7 @@ export async function loadTrips(page = 1) {
   app.className = 'trip-view';
 
   // Layout: Header + Button
-  const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
+  const container = createElement("div", { className: "container-fluid py-5 pt-5 pb-5 d-flex flex-column align-items-center" });
   const heading = createElement("h2", { className: "my-trips-heading" }, "🌍 My Trips");
   const newTripBtn = createElement("button", { className: "trip-add-btn" }, "+");
   container.append(heading, newTripBtn);
