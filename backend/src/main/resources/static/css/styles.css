@@ -5,6 +5,5 @@
 @import 'trips.css';
 
 /* 2. layout specific */
-@import 'navbar.css';
-@import 'footer.css';
 @import 'general.css';
+@import 'text.css';

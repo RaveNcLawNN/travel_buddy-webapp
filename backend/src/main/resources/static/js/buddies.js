@@ -20,7 +20,7 @@ export async function loadBuddies() {
 
         // Main container
         const container = createElement('div', { className: 'container pt-5 pb-5' });
-        container.appendChild(createElement('h2', { className: 'mb-4 fs-1 fw-bold' }, 'Buddies'));
+        container.appendChild(createElement('h2', { className: 'text-h2 mb-4' }, 'Buddies'));
 
         // Add Buddy Button
         const addBuddyBtn = createElement('button', {

@@ -1,0 +1,48 @@
+/*CSS Regeln, die für Texte global relevant sind, z.B. für HLs, fließenden Text, etc.*/
+
+.text-h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: var(--tb-spacing);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.text-h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: var(--tb-spacing);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.text-h2-center {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--tb-spacing);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.text-highlight {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: var(--tb-spacing);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.text-paragraph {
+  font-size: 1rem;
+  font-weight: 300;
+  margin-bottom: var(--tb-spacing);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.nav-link:hover {
+  background-color: red; /* helles Grau */
+  color: #198754;            /* eure Akzentfarbe */
+}
+
+/* Styling für den aktiven Link */
+.nav-link.active {
+  background-color: #198754; /* grüne Fläche */
+  color: white;              /* weißer Text */
+}

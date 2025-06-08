@@ -12,20 +12,6 @@
     color: white;
 }
 
-.text-shadow {
-    text-shadow: 0 0 8px rgba(0, 0, 0, 0.2), 
-                 0 0 4px rgba(0, 0, 0, 0.1);
-}
-
-.text-bold {
-    font-weight: bold
-}
-
-.text-more-space {
-    margin-bottom: 1rem;
-
-}
-
 .formWrapper {
     background: rgba(255, 255, 255, 0.90);
     border-radius: 1rem;
@@ -34,17 +20,6 @@
     max-width: 500px;
     width: 90%;
     margin: 1rem auto 0 auto;
-}
-
-.search-results ul {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.search-result-home {
-    padding: 2rem 0;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
 }
 
 #map {
