@@ -4,6 +4,7 @@
 
 import { createElement } from './createElement.js';
 import { searchPointsOfInterest } from './api.js';
+import { getWeather } from './api.js';  // Wetter-API importieren
 import { createMap, setMapMarker, clearMapMarkers, fitMapToMarkers, addPoiFilterPanel } from './map.js';
 
 //=============================================
@@ -33,8 +34,11 @@ function createMapContainer() {
   const mapDiv = createElement('div', { id: 'map' });
   const sidePanel = createElement('div', { id: 'map-sidebar' });
 
-  sidePanel.appendChild(createElement('h5', {}, 'Sidebar Panel'));
-  sidePanel.appendChild(createElement('p', {}, 'You can add filters, highlights, or anything else.'));
+  sidePanel.appendChild(createElement('h5', {}, 'Current Weather'));
+  sidePanel.appendChild(createElement('p', {}, 'This is the current weather at PLACEHOLDER'));
+
+  const weatherContainer = createElement('div', { id: 'weather-container' });
+  sidePanel.appendChild(weatherContainer);
 
   wrapper.append(mapDiv, sidePanel);
   return wrapper;
@@ -110,15 +114,18 @@ export async function loadHome() {
 
       await loadPois(loc.latitude, loc.longitude, currentTypes);
 
+      // Wetterdaten abrufen und anzeigen
+      const weatherData = await getWeather(loc.latitude, loc.longitude);
+      renderWeather(weatherData);
+
       document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-
     } catch (err) {
-      alert('Error fetching location.');
+      console.error(err);
+      alert('Fehler: ' + err.message);
     }
   }
 
-  // Loads and shows POIs on the map baed on filters
+  // Loads and shows POIs on the map based on filters
   async function loadPois(lat, lon, types, radius) {
     poiMarkers = clearMapMarkers(map, poiMarkers);
 
@@ -127,12 +134,7 @@ export async function loadHome() {
     }
 
     try {
-      const pois = await searchPointsOfInterest({
-        latitude: lat,
-        longitude: lon,
-        radius,
-        types
-      });
+      const pois = await searchPointsOfInterest({ latitude: lat, longitude: lon, radius, types });
 
       if (!pois || pois.length === 0) {
         return;
@@ -141,19 +143,30 @@ export async function loadHome() {
       pois.forEach(poi => {
         const rawType = poi.type || 'default';
         const type = rawType.toLowerCase();
-
         if (!types.includes(type)) return;
-
-        const popup = `<strong>${poi.name}</strong><br>Type: ${rawType}${poi.website ? `<br><a href='${poi.website}' target='_blank'>Website</a>` : ''
-          }${poi.phone ? `<br>Phone: ${poi.phone}` : ''}`;
-
+        const popup = `<strong>${poi.name}</strong><br>Type: ${rawType}` +
+                      `${poi.website ? `<br><a href='${poi.website}' target='_blank'>Website</a>` : ''}` +
+                      `${poi.phone ? `<br>Phone: ${poi.phone}` : ''}`;
         const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, type);
         poiMarkers.push(marker);
       });
-
-      // fitMapToMarkers(map, [cityMarker, ...poiMarkers]);
     } catch (e) {
       console.log('Failed to load POIs:', e);
     }
+  }
+
+  function renderWeather(data) {
+    const container = document.getElementById('weather-container');
+    container.innerHTML = '';
+    if (!data) {
+      container.appendChild(createElement('p', {}, 'Keine Wetterdaten verfügbar.'));
+      return;
+    }
+    const timeP = createElement('p', { textContent: `Zeit: ${data.time}` });
+    const tempP = createElement('p', { textContent: `Temperatur: ${data.temperature.toFixed(1)} °C` });
+    const feelP = createElement('p', { textContent: `Gefühlte Temperatur: ${data.apparentTemperature.toFixed(1)} °C` });
+    const humP = createElement('p', { textContent: `Luftfeuchte: ${data.humidity}%` });
+    const precP = createElement('p', { textContent: `Niederschlag: ${data.precipitation} mm` });
+    container.append(timeP, tempP, feelP, humP, precP);
   }
 }
