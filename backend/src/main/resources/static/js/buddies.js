@@ -75,35 +75,60 @@ export async function loadBuddies() {
         );
         container.appendChild(buddiesCard);
 
-        // Add Buddy Modal (unchanged, still uses innerHTML for modal for now)
-        const addBuddyModal = document.createElement('div');
-        addBuddyModal.innerHTML = `
-            <div class="modal fade" id="addBuddyModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Add Buddy</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="addBuddyForm">
-                                <div class="mb-3">
-                                    <label for="buddyUsername" class="form-label">Buddy's Username</label>
-                                    <input type="text" class="form-control" id="buddyUsername" required>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="sendBuddyRequestBtn">Send Request</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        // Only append the modal if not already present
+        // Add Buddy Modal (refactored for accessibility and W3C compliance)
         if (!document.getElementById('addBuddyModal')) {
-            document.body.appendChild(addBuddyModal.firstElementChild);
+            const modal = createElement('div', {
+                className: 'modal fade',
+                id: 'addBuddyModal',
+                tabIndex: -1,
+                role: 'dialog',
+                'aria-modal': 'true',
+                'aria-labelledby': 'addBuddyModalLabel',
+            });
+            const dialog = createElement('div', { className: 'modal-dialog' });
+            const content = createElement('div', { className: 'modal-content' });
+            // Header
+            const header = createElement('div', { className: 'modal-header' },
+                createElement('h5', { className: 'modal-title', id: 'addBuddyModalLabel' }, 'Add Buddy'),
+                createElement('button', {
+                    type: 'button',
+                    className: 'btn-close',
+                    'data-bs-dismiss': 'modal',
+                    'aria-label': 'Close'
+                })
+            );
+            // Body
+            const body = createElement('div', { className: 'modal-body' });
+            const form = createElement('form', { id: 'addBuddyForm' });
+            const formGroup = createElement('div', { className: 'mb-3' },
+                createElement('label', { for: 'buddyUsername', className: 'form-label' }, "Buddy's Username"),
+                createElement('input', {
+                    type: 'text',
+                    className: 'form-control',
+                    id: 'buddyUsername',
+                    required: true,
+                    autocomplete: 'off',
+                })
+            );
+            form.appendChild(formGroup);
+            body.appendChild(form);
+            // Footer
+            const footer = createElement('div', { className: 'modal-footer' },
+                createElement('button', {
+                    type: 'button',
+                    className: 'btn btn-secondary',
+                    'data-bs-dismiss': 'modal'
+                }, 'Cancel'),
+                createElement('button', {
+                    type: 'button',
+                    className: 'btn btn-primary',
+                    id: 'sendBuddyRequestBtn'
+                }, 'Send Request')
+            );
+            content.append(header, body, footer);
+            dialog.appendChild(content);
+            modal.appendChild(dialog);
+            document.body.appendChild(modal);
         }
 
         app.replaceChildren(container);

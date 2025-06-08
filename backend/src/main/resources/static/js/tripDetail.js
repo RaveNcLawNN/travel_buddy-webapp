@@ -104,8 +104,10 @@ export async function loadTripDetail(id) {
 
   // Edit-Btn
   document.getElementById("editTripBtn").addEventListener("click", () => {
-    openEditTripForm(trip, async () => {
-      await loadTripDetail(trip.id);
+    getTripById(trip.id).then(freshTrip => {
+      openEditTripForm(freshTrip, async () => {
+        await loadTripDetail(trip.id);
+      });
     });
   });
 

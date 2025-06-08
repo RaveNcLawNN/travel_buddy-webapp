@@ -105,7 +105,10 @@ export async function loadTrips(page = 1) {
 
     // Pagination Controls
     if (totalPages > 1) {
-      const pagination = createElement("div", { className: "d-flex justify-content-center gap-2 mt-3 flex-wrap" });
+      // Remove existing pagination if present
+      const oldPagination = container.querySelector('#tripPagination');
+      if (oldPagination) oldPagination.remove();
+      const pagination = createElement("div", { id: "tripPagination", className: "d-flex justify-content-center gap-2 mt-3 flex-wrap" });
       for (let i = 1; i <= totalPages; i++) {
         const pageBtn = createElement("button", { className: `btn ${i === page ? "btn-dark" : "btn-outline-dark"} px-3` }, i.toString());
         pageBtn.addEventListener("click", () => {

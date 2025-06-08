@@ -25,14 +25,15 @@ export function loadProfile() {
   const sidebarBody = createElement('div', { className: 'card-body' });
   sidebarBody.appendChild(createElement('h4', { className: 'card-title mb-3' }, 'Profile Picture'));
 
-  // File input and upload button
+  // File input (hidden) and upload button
   const fileInput = createElement('input', {
     type: 'file',
     accept: 'image/*',
-    className: 'form-control mb-3'
+    style: 'display: none;'
   });
   const uploadBtn = createElement('button', { className: 'btn btn-primary w-100 mb-3' }, 'Upload Picture');
-  uploadBtn.onclick = () => {
+  uploadBtn.onclick = () => fileInput.click();
+  fileInput.onchange = () => {
     const file = fileInput.files[0];
     if (file) {
       const reader = new FileReader();
@@ -54,7 +55,7 @@ export function loadProfile() {
   function displayProfilePicture() {
     const pictureUrl =
       localStorage.getItem(`profilePicture_${currentUser.username}`) ||
-      'placeholder.jpg';
+      '/images/portrait-placeholder.png';
     const img = createElement('img', {
       src: pictureUrl,
       className: 'img-fluid rounded-circle',

@@ -207,7 +207,8 @@ export function openEditTripForm(trip, onSubmitCallback) {
             startDate: startDate.value,
             endDate: endDate.value,
             status: status.value,
-            participantUsernames: [...(trip.participantUsernames || []), ...selectedBuddies]
+            participantUsernames: [...(trip.participantUsernames || []), ...selectedBuddies],
+            locations: (trip.locations || []).map(loc => ({ ...loc, tripId: trip.id }))
         };
 
         if (!updatedTrip.title || !updatedTrip.destination || !updatedTrip.startDate || !updatedTrip.endDate || !updatedTrip.status) {

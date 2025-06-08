@@ -269,6 +269,10 @@ public class TripController {
             participants.add(trip.getOrganizer());
             trip.setParticipants(participants);
         }
+        // Ensure each location has the trip set
+        if (trip.getLocations() != null) {
+            trip.getLocations().forEach(location -> location.setTrip(trip));
+        }
         Trip updatedTrip = tripService.updateTrip(trip);
         return ResponseEntity.ok(tripMapper.toDto(updatedTrip));
     }
