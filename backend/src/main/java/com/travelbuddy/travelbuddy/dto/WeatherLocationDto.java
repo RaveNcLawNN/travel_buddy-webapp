@@ -1,12 +1,12 @@
 package com.travelbuddy.travelbuddy.dto;
 
-import java.util.ArrayList;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+
+import java.util.List;
 
 /**
  * Data Transfer Object for weather information.
@@ -28,11 +28,14 @@ public class WeatherLocationDto {
     private long timezoneOffset;
 
     @NotNull(message = "")
-    private long currentTime;
+    private double elevation;
 
     @NotNull(message = "")
-    private WeatherDaily[] dailyWeatherData;
+    private WeatherCurrentDto currentWeather;
 
     @NotNull(message = "")
-    private WeatherHourly[] hourlyWeatherData;
+    private List<WeatherDailyDto> dailyWeatherData;
+
+    @NotNull(message = "")
+    private List<WeatherHourlyDto> hourlyWeatherData;
 } 
