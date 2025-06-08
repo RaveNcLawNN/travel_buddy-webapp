@@ -1,7 +1,6 @@
 /* trips.css */
 
 .trip-view {
-    min-height: 100vh;
     padding: var(--tb-spacing) 1rem;
     background-color: #fff;
 }
