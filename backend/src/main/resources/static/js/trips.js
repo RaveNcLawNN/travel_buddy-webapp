@@ -23,9 +23,9 @@ export async function loadTrips(page = 1) {
   app.className = 'trip-view';
 
   // Layout: Header + Button
-  const container = createElement("div", { className: "container-fluid py-5 d-flex flex-column align-items-center" });
-  const heading = createElement("h2", { className: "display-5 fw-bold text-center mb-spacing" }, "My Trips");
-  const newTripBtn = createElement("button", { className: "btn btn-success mb-4" }, "+");
+  const container = createElement("div", { className: "container-fluid py-5 pt-5 pb-5 d-flex flex-column align-items-center" });
+  const heading = createElement("h2", { className: "text-center mb-4 fs-1 fw-bold" }, "Trips");
+  const newTripBtn = createElement("button", { className: "btn btn-success mb-5" }, "+");
   container.append(heading, newTripBtn);
 
   // Trip List

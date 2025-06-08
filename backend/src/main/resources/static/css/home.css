@@ -1,9 +1,3 @@
-/* in home.css ergänzen */
-
-body.home-view {
-    background-color: rgb(200, 200, 200);
-}
-
 #hero-section {
     background-image: url('/images/travelBuddy_home_WIP.jpg');
     background-size: cover;

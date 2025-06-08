@@ -2,57 +2,101 @@ import { getCurrentUser } from './auth.js';
 import { createElement } from './createElement.js';
 
 export function loadProfile() {
-    const app = document.getElementById('app');
-    const currentUser = getCurrentUser();
+  const app = document.getElementById('app');
+  const currentUser = getCurrentUser();
 
-    if (!currentUser) {
-        app.replaceChildren(createElement('div', { className: 'alert alert-warning' }, 'Please log in to view your profile.'));
-        return;
+  if (!currentUser) {
+    app.replaceChildren(
+      createElement(
+        'div',
+        { className: 'alert alert-warning text-center' },
+        'Please log in to view your profile.'
+      )
+    );
+    return;
+  }
+
+  const container = createElement('div', { className: 'container py-4 pt-5 pb-5' });
+  const row = createElement('div', { className: 'row g-4' });
+
+  // Sidebar: Profile Picture Upload & Display
+  const sidebarCol = createElement('div', { className: 'col-12 col-md-4' });
+  const sidebarCard = createElement('div', { className: 'card' });
+  const sidebarBody = createElement('div', { className: 'card-body' });
+  sidebarBody.appendChild(createElement('h4', { className: 'card-title mb-3' }, 'Profile Picture'));
+
+  // File input and upload button
+  const fileInput = createElement('input', {
+    type: 'file',
+    accept: 'image/*',
+    className: 'form-control mb-3'
+  });
+  const uploadBtn = createElement('button', { className: 'btn btn-primary w-100 mb-3' }, 'Upload Picture');
+  uploadBtn.onclick = () => {
+    const file = fileInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem(
+          `profilePicture_${currentUser.username}`,
+          e.target.result
+        );
+        displayProfilePicture();
+      };
+      reader.readAsDataURL(file);
     }
+  };
+  sidebarBody.appendChild(fileInput);
+  sidebarBody.appendChild(uploadBtn);
 
-    const container = createElement('div', { className: 'container' });
-    container.appendChild(createElement('h2', { className: 'mb-4' }, 'My Profile'));
+  // Display Profile Picture
+  const pictureDisplay = createElement('div', { className: 'text-center' });
+  function displayProfilePicture() {
+    const pictureUrl =
+      localStorage.getItem(`profilePicture_${currentUser.username}`) ||
+      'placeholder.jpg';
+    const img = createElement('img', {
+      src: pictureUrl,
+      className: 'img-fluid rounded-circle',
+      style: 'max-width: 150px;'
+    });
+    pictureDisplay.replaceChildren(img);
+  }
+  displayProfilePicture();
+  sidebarBody.appendChild(pictureDisplay);
+  sidebarCard.appendChild(sidebarBody);
+  sidebarCol.appendChild(sidebarCard);
 
-    // Profile Picture Upload
-    const uploadSection = createElement('div', { className: 'mb-4' });
-    uploadSection.appendChild(createElement('h4', {}, 'Profile Picture'));
-    const fileInput = createElement('input', { type: 'file', accept: 'image/*', className: 'form-control mb-2' });
-    const uploadBtn = createElement('button', { className: 'btn btn-primary' }, 'Upload Picture');
-    uploadBtn.onclick = () => {
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                localStorage.setItem(`profilePicture_${currentUser.username}`, e.target.result);
-                displayProfilePicture();
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    uploadSection.appendChild(fileInput);
-    uploadSection.appendChild(uploadBtn);
-    container.appendChild(uploadSection);
+  // Main Content: Profile Info
+  const mainCol = createElement('div', { className: 'col-12 col-md-8' });
+  const mainCard = createElement('div', { className: 'card' });
+  const mainBody = createElement('div', { className: 'card-body' });
+  mainBody.appendChild(createElement('h2', { className: 'card-title mb-4' }, 'My Profile'));
 
-    // Display Profile Picture
-    const pictureDisplay = createElement('div', { className: 'mb-4' });
-    function displayProfilePicture() {
-        const pictureUrl = localStorage.getItem(`profilePicture_${currentUser.username}`) || 'placeholder.jpg';
-        const img = createElement('img', { src: pictureUrl, className: 'img-thumbnail', style: 'max-width: 200px;' });
-        pictureDisplay.replaceChildren(img);
-    }
-    displayProfilePicture();
-    container.appendChild(pictureDisplay);
+  // Description Section
+  mainBody.appendChild(createElement('h4', { className: 'mb-3' }, 'About Me'));
+  const textarea = createElement('textarea', {
+    className: 'form-control mb-3',
+    rows: 5,
+    placeholder: 'Write a short description about yourself...'
+  });
+  textarea.value =
+    localStorage.getItem(`profileDescription_${currentUser.username}`) ||
+    '';
+  textarea.onchange = () => {
+    localStorage.setItem(
+      `profileDescription_${currentUser.username}`,
+      textarea.value
+    );
+  };
+  mainBody.appendChild(textarea);
 
-    // Description
-    const descriptionSection = createElement('div', { className: 'mb-4' });
-    descriptionSection.appendChild(createElement('h4', {}, 'About Me'));
-    const textarea = createElement('textarea', { className: 'form-control', rows: 4, placeholder: 'Write a short description about yourself...' });
-    textarea.value = localStorage.getItem(`profileDescription_${currentUser.username}`) || '';
-    textarea.onchange = () => {
-        localStorage.setItem(`profileDescription_${currentUser.username}`, textarea.value);
-    };
-    descriptionSection.appendChild(textarea);
-    container.appendChild(descriptionSection);
+  mainCard.appendChild(mainBody);
+  mainCol.appendChild(mainCard);
 
-    app.replaceChildren(container);
-} 
+  // Assemble layout
+  row.appendChild(sidebarCol);
+  row.appendChild(mainCol);
+  container.appendChild(row);
+  app.replaceChildren(container);
+}
