@@ -37,12 +37,14 @@
 }
 
 .nav-link:hover {
-  background-color: red; /* helles Grau */
-  color: #198754;            /* eure Akzentfarbe */
+    text-decoration: underline;
 }
 
-/* Styling für den aktiven Link */
 .nav-link.active {
-  background-color: #198754; /* grüne Fläche */
-  color: white;              /* weißer Text */
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.nav-item {
+    font-size: 1.1rem;
 }

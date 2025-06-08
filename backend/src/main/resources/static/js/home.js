@@ -11,8 +11,8 @@ import { createMap, setMapMarker, clearMapMarkers, fitMapToMarkers, addPoiFilter
 //=============================================
 
 function createHeroSection(onSearch) {
-  const heading = createElement('h1', { className: 'display-4 text-shadow text-bold text-more-space', textContent: 'Welcome to Travel Buddy' });
-  const lead = createElement('p', { className: 'lead text-shadow text-bold text-more-space', textContent: 'Plan trips, track adventures, and find your perfect destination.' });
+  const heading = createElement('h1', { className: 'text-h1', textContent: 'Welcome to Travel Buddy' });
+  const lead = createElement('p', { className: 'text-highlight', textContent: 'Plan trips, track adventures, and find your perfect destination.' });
   const searchInput = createElement('input', { type: 'text', className: 'form-control', placeholder: 'Search for cities...', id: 'citySearchInput' });
   const searchButton = createElement('button', { className: 'btn btn-primary', type: 'submit' }, 'Search');
   const inputGroup = createElement('div', { className: 'input-group' }, searchInput, searchButton);
