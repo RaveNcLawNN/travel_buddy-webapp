@@ -1,23 +1,41 @@
 //=============================================
 // IMPORTS
 //=============================================
-
 import { createElement } from './createElement.js';
-import { searchPointsOfInterest } from './api.js';
-import { getWeather } from './api.js';  // Wetter-API importieren
-import { createMap, setMapMarker, clearMapMarkers, fitMapToMarkers, addPoiFilterPanel } from './map.js';
+import { searchPointsOfInterest, getWeather } from './api.js';
+import {
+  createMap,
+  setMapMarker,
+  clearMapMarkers,
+  fitMapToMarkers,
+  addPoiFilterPanel
+} from './map.js';
+import {
+  calculateInitialHourlyIndex,
+  renderCurrent,
+  renderHourly,
+  renderDaily
+} from './weather.js';
 
 //=============================================
 // HERO SECTION
 //=============================================
-
 function createHeroSection(onSearch) {
-  const heading = createElement('h1', { className: 'text-h1', textContent: 'Travel Buddy' });
-  const lead = createElement('p', { className: 'text-highlight', textContent: 'Find your next adventure' });
-  const searchInput = createElement('input', { type: 'text', className: 'form-control', placeholder: 'Search for cities...', id: 'citySearchInput' });
-  const searchButton = createElement('button', { className: 'btn btn-primary', type: 'submit' }, 'Search');
+  const heading     = createElement('h1', { className: 'text-h1', textContent: 'Travel Buddy' });
+  const lead        = createElement('p',  { className: 'text-highlight', textContent: 'Find your next adventure' });
+  const searchInput = createElement('input', {
+    type: 'text',
+    className: 'form-control',
+    placeholder: 'Search for cities...',
+    id: 'citySearchInput'
+  });
+  const searchButton = createElement('button', {
+    className: 'btn btn-primary',
+    type: 'submit',
+    textContent: 'Search'
+  });
   const inputGroup = createElement('div', { className: 'input-group' }, searchInput, searchButton);
-  const form = createElement('form', {}, inputGroup);
+  const form       = createElement('form', {}, inputGroup);
   form.addEventListener('submit', onSearch);
 
   const formWrapper = createElement('div', { className: 'formWrapper' }, form);
@@ -26,20 +44,62 @@ function createHeroSection(onSearch) {
 }
 
 //=============================================
-// MAP SECTION
+// MAP + SIDEBAR WITH TABS
 //=============================================
-
 function createMapContainer() {
-  const wrapper = createElement('section', { id: 'map-container' });
-  const mapDiv = createElement('div', { id: 'map' });
-  const sidePanel = createElement('div', { id: 'map-sidebar' });
+  const wrapper   = createElement('section', { id: 'map-container' });
+  const mapDiv    = createElement('div',     { id: 'map' });
+  const sidePanel = createElement('div',     { id: 'map-sidebar' });
 
-  sidePanel.appendChild(createElement('h5', {}, 'Current Weather'));
-  sidePanel.appendChild(createElement('p', {}, 'This is the current weather at PLACEHOLDER'));
+  // Nav-Tabs zentriert
+  const navTabs  = createElement('ul', {
+    className: 'nav nav-tabs justify-content-center',
+    role: 'tablist'
+  });
+  const tabPanes = [];
 
-  const weatherContainer = createElement('div', { id: 'weather-container' });
-  sidePanel.appendChild(weatherContainer);
+  const tabs = [
+    { label: 'Aktuell',   id: 'current-tab', target: 'current',  active: true  },
+    { label: 'Stündlich', id: 'hourly-tab',  target: 'hourly',  active: false },
+    { label: 'Täglich',   id: 'daily-tab',   target: 'daily',   active: false }
+  ];
 
+  tabs.forEach(tab => {
+    const li  = createElement('li', { className: 'nav-item', role: 'presentation' });
+    const btn = createElement('button', {
+      className: `nav-link${tab.active ? ' active' : ''}`,
+      id: tab.id,
+      type: 'button',
+      role: 'tab',
+      textContent: tab.label
+    });
+    li.append(btn);
+    navTabs.append(li);
+
+    // Pane erstellen und Platzhalter-Text setzen
+    const pane = createElement('div', {
+      className: `tab-pane fade${tab.active ? ' show active' : ''}`,
+      id: tab.target,
+      role: 'tabpanel',
+      'aria-labelledby': tab.id
+    });
+    pane.append(
+      createElement('p', { className: 'text-center text-muted p-3' },
+        'Bitte suche zunächst eine Stadt, um Wetterdaten anzuzeigen.'
+      )
+    );
+    tabPanes.push(pane);
+
+    btn.addEventListener('click', () => {
+      tabs.forEach(t => document.getElementById(t.id).classList.remove('active'));
+      tabPanes.forEach(p => p.classList.remove('show', 'active'));
+      btn.classList.add('active');
+      pane.classList.add('show', 'active');
+    });
+  });
+
+  const tabContent = createElement('div', { className: 'tab-content' }, ...tabPanes);
+  sidePanel.append(navTabs, tabContent);
   wrapper.append(mapDiv, sidePanel);
   return wrapper;
 }
@@ -47,7 +107,6 @@ function createMapContainer() {
 //=============================================
 // MAIN ENTRY POINT
 //=============================================
-
 export async function loadHome() {
   const app = document.getElementById('app');
   if (!app) {
@@ -57,33 +116,25 @@ export async function loadHome() {
   app.replaceChildren();
   app.className = '';
 
-  const heroSection = createHeroSection(onSearch);
+  const heroSection  = createHeroSection(onSearch);
   const mapContainer = createMapContainer();
   app.append(heroSection, mapContainer);
 
-  //=============================================
-  // MAP INITIALIZATION
-  //=============================================
-
   const map = createMap('map', [20, 0], 2);
+  setTimeout(() => map.invalidateSize(), 0);
+  window.addEventListener('resize', () => map.invalidateSize());
 
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 0);
-
-  window.addEventListener('resize', () => {
-    map.invalidateSize();
-  });
-
-  let cityMarker = null;
-  let poiMarkers = [];
+  let cityMarker    = null;
+  let poiMarkers    = [];
   let currentCoords = null;
-  let currentTypes = [];
+  let currentTypes  = [];
   let currentRadius = 1000;
 
-  // Dynamic POI filters
-  addPoiFilterPanel(map, (selectedTypes, radius) => {
-    currentTypes = selectedTypes;
+  let hourlyIndex = 0;
+  let dailyIndex  = 0;
+
+  addPoiFilterPanel(map, (types, radius) => {
+    currentTypes  = types;
     currentRadius = radius;
     if (currentCoords) {
       loadPois(currentCoords.lat, currentCoords.lon, currentTypes, currentRadius);
@@ -91,30 +142,28 @@ export async function loadHome() {
   });
 
   //=============================================
-  // EVENT HANDLERS
+  // EVENT HANDLER: SEARCH
   //=============================================
-
   async function onSearch(e) {
     e.preventDefault();
     const query = document.getElementById('citySearchInput').value.trim();
     if (!query) {
-      return alert('Please enter a city name.');
+      return alert('Bitte Stadtnamen eingeben.');
     }
     try {
-      const res = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
+      const res       = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
       const locations = await res.json();
+      if (!locations.length) {
+        return alert(`Keine Treffer für "${query}".`);
+      }
 
-      if (!locations.length) return alert(`No locations found matching "${query}".`);
-
-      const loc = locations[0];
-      currentCoords = { lat: loc.latitude, lon: loc.longitude };
+      const loc       = locations[0];
+      currentCoords   = { lat: loc.latitude, lon: loc.longitude };
       map.setView([loc.latitude, loc.longitude], 13);
+      cityMarker      = setMapMarker(map, loc.latitude, loc.longitude, loc.displayName, cityMarker, 'default');
 
-      cityMarker = setMapMarker(map, loc.latitude, loc.longitude, loc.displayName, cityMarker, 'default');
+      await loadPois(loc.latitude, loc.longitude, currentTypes, currentRadius);
 
-      await loadPois(loc.latitude, loc.longitude, currentTypes);
-
-      // Wetterdaten abrufen und anzeigen
       const weatherData = await getWeather(loc.latitude, loc.longitude);
       renderWeather(weatherData);
 
@@ -125,48 +174,44 @@ export async function loadHome() {
     }
   }
 
-  // Loads and shows POIs on the map based on filters
+  //=============================================
+  // POI LADEN
+  //=============================================
   async function loadPois(lat, lon, types, radius) {
     poiMarkers = clearMapMarkers(map, poiMarkers);
-
-    if (!types || types.length === 0) {
-      return;
-    }
+    if (!types || !types.length) return;
 
     try {
       const pois = await searchPointsOfInterest({ latitude: lat, longitude: lon, radius, types });
-
-      if (!pois || pois.length === 0) {
-        return;
-      }
+      if (!pois || !pois.length) return;
 
       pois.forEach(poi => {
-        const rawType = poi.type || 'default';
-        const type = rawType.toLowerCase();
+        const type  = (poi.type || 'default').toLowerCase();
         if (!types.includes(type)) return;
-        const popup = `<strong>${poi.name}</strong><br>Type: ${rawType}` +
-                      `${poi.website ? `<br><a href='${poi.website}' target='_blank'>Website</a>` : ''}` +
-                      `${poi.phone ? `<br>Phone: ${poi.phone}` : ''}`;
+        const popup = `<strong>${poi.name}</strong><br>Type: ${poi.type}`
+                    + (poi.website ? `<br><a href="${poi.website}" target="_blank">Website</a>` : '')
+                    + (poi.phone   ? `<br>Phone: ${poi.phone}` : '');
         const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, type);
         poiMarkers.push(marker);
       });
     } catch (e) {
-      console.log('Failed to load POIs:', e);
+      console.error('Failed to load POIs:', e);
     }
   }
 
+  //=============================================
+  // WEATHER RENDERING
+  //=============================================
   function renderWeather(data) {
-    const container = document.getElementById('weather-container');
-    container.innerHTML = '';
-    if (!data) {
-      container.appendChild(createElement('p', {}, 'Keine Wetterdaten verfügbar.'));
-      return;
-    }
-    const timeP = createElement('p', { textContent: `Zeit: ${data.time}` });
-    const tempP = createElement('p', { textContent: `Temperatur: ${data.temperature.toFixed(1)} °C` });
-    const feelP = createElement('p', { textContent: `Gefühlte Temperatur: ${data.apparentTemperature.toFixed(1)} °C` });
-    const humP = createElement('p', { textContent: `Luftfeuchte: ${data.humidity}%` });
-    const precP = createElement('p', { textContent: `Niederschlag: ${data.precipitation} mm` });
-    container.append(timeP, tempP, feelP, humP, precP);
+    dailyIndex  = 0;
+    hourlyIndex = calculateInitialHourlyIndex(data.hourlyWeatherData);
+
+    const currentContainer = document.getElementById('current');
+    const hourlyContainer  = document.getElementById('hourly');
+    const dailyContainer   = document.getElementById('daily');
+
+    renderCurrent(data.currentWeather,   currentContainer);
+    renderHourly(data.hourlyWeatherData, hourlyIndex,  hourlyContainer);
+    renderDaily(data.dailyWeatherData,   dailyIndex,   dailyContainer);
   }
 }

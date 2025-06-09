@@ -134,5 +134,5 @@ export async function getWeather(latitude, longitude) {
     `Failed to fetch weather for (${latitude}, ${longitude})`
   );
 
-  return data.currentWeather;
+  return data;
 }

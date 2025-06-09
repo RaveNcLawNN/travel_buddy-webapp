@@ -7,3 +7,6 @@
 /* 2. layout specific */
 @import 'general.css';
 @import 'text.css';
+
+/* 3. special css */
+@import 'animated-weather.css'
