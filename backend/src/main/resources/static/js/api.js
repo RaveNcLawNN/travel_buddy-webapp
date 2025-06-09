@@ -153,9 +153,45 @@ export async function updateLocation(id, payload) {
  * Deletes a location by ID.
  * @param {string} id
  */
+// Delete a specific location
 export async function deleteLocation(id) {
   const res = await fetch(`${API_BASE}/locations/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Failed to delete location (id=${id})`);
+}
+
+//=============================================
+// USER & PARTICIPANT ENDPOINTS
+//=============================================
+
+// Get user details by username
+export async function getUserByUsername(username) {
+  return await fetchJsonOrThrow(`/api/users/${username}`, {}, `User not found (${username})`);
+}
+
+// Get buddy list for a specific user
+export async function getBuddiesForUser(username) {
+  return await fetchJsonOrThrow(`/api/users/${username}/buddies`, {}, `Failed to fetch buddies for user ${username}`);
+}
+
+// Remove a user from a trip's participant list
+export async function removeParticipantFromTrip(tripId, userId) {
+  return await fetchJsonOrThrow(`/api/trips/${tripId}/participants/${userId}`, {
+    method: 'DELETE'
+  }, `Failed to remove participant ${userId} from trip ${tripId}`);
+}
+
+//=============================================
+//TRIP FILTERING BY USER ROLE
+//=============================================
+
+// Get trips where the user is the organizer
+export async function getTripsByOrganizer(userId) {
+  return await fetchJsonOrThrow(`/api/trips/organizer/${userId}`, {}, 'Failed to fetch trips by organizer');
+}
+
+// Get trips where the user is a participant
+export async function getTripsByParticipant(userId) {
+  return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
 }
 
 // =============================================
