@@ -24,14 +24,17 @@ async function fetchJsonOrThrow(url, options, errorMsg) {
 // TRIPS
 //=============================================
 
+// Fetch all trips
 export async function getAllTrips() {
   return await fetchJsonOrThrow(`${API_BASE}/trips`, {}, 'Failed to fetch trips');
 }
 
+// Fetch a specific trip by ID
 export async function getTripById(id) {
   return await fetchJsonOrThrow(`${API_BASE}/trips/${id}`, {}, `Trip not found (id=${id})`);
 }
 
+// Create a new trip
 export async function createTrip(payload) {
   return await fetchJsonOrThrow(`${API_BASE}/trips`, {
     method: 'POST',
@@ -40,6 +43,7 @@ export async function createTrip(payload) {
   }, 'Failed to create trip');
 }
 
+// Update an existing trip
 export async function updateTrip(id, payload) {
   return await fetchJsonOrThrow(`${API_BASE}/trips/${id}`, {
     method: 'PUT',
@@ -48,6 +52,7 @@ export async function updateTrip(id, payload) {
   }, 'Failed to update trip');
 }
 
+// Delete a trip
 export async function deleteTrip(id) {
   const res = await fetch(`${API_BASE}/trips/${id}`, {
     method: 'DELETE',
@@ -61,10 +66,12 @@ export async function deleteTrip(id) {
 // LOCATIONS
 //=============================================
 
+// Get all locations associated with a specific trip
 export async function getLocationsByTrip(tripId) {
   return await fetchJsonOrThrow(`${API_BASE}/locations/trips/${tripId}`, {}, `Failed to fetch locations for trip ${tripId}`);
 }
 
+// Add a new location to a trip
 export async function createLocation(tripId, payload) {
   return await fetchJsonOrThrow(`${API_BASE}/locations/trips/${tripId}`, {
     method: 'POST',
@@ -73,6 +80,7 @@ export async function createLocation(tripId, payload) {
   }, 'Failed to create location');
 }
 
+// Update an existing location
 export async function updateLocation(id, payload) {
   return await fetchJsonOrThrow(`${API_BASE}/locations/${id}`, {
     method: 'PUT',
@@ -81,6 +89,7 @@ export async function updateLocation(id, payload) {
   }, 'Failed to update location');
 }
 
+// Delete a specific location
 export async function deleteLocation(id) {
   const res = await fetch(`${API_BASE}/locations/${id}`, { method: 'DELETE' });
   if (!res.ok) {
@@ -89,13 +98,50 @@ export async function deleteLocation(id) {
 }
 
 //=============================================
+// USER & PARTICIPANT ENDPOINTS
+//=============================================
+
+// Get user details by username
+export async function getUserByUsername(username) {
+  return await fetchJsonOrThrow(`/api/users/${username}`, {}, `User not found (${username})`);
+}
+
+// Get buddy list for a specific user
+export async function getBuddiesForUser(username) {
+  return await fetchJsonOrThrow(`/api/users/${username}/buddies`, {}, `Failed to fetch buddies for user ${username}`);
+}
+
+// Remove a user from a trip's participant list
+export async function removeParticipantFromTrip(tripId, userId) {
+  return await fetchJsonOrThrow(`/api/trips/${tripId}/participants/${userId}`, {
+    method: 'DELETE'
+  }, `Failed to remove participant ${userId} from trip ${tripId}`);
+}
+
+//=============================================
+//TRIP FILTERING BY USER ROLE
+//=============================================
+
+// Get trips where the user is the organizer
+export async function getTripsByOrganizer(userId) {
+  return await fetchJsonOrThrow(`/api/trips/organizer/${userId}`, {}, 'Failed to fetch trips by organizer');
+}
+
+// Get trips where the user is a participant
+export async function getTripsByParticipant(userId) {
+  return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
+}
+
+//=============================================
 // EXTERNAL APIs
 //=============================================
 
+// Search for location suggestions
 export async function searchLocation(query) {
   return await fetchJsonOrThrow(`${API_BASE}/locations/search?query=${encodeURIComponent(query)}`, {}, 'Failed to search location');
 }
 
+// Search for POIs near a given coordinate
 export async function searchPointsOfInterest({ latitude, longitude, radius = 1000, types = '' }) {
   const params = new URLSearchParams({
     latitude: latitude.toString(),
@@ -106,20 +152,8 @@ export async function searchPointsOfInterest({ latitude, longitude, radius = 100
   return await fetchJsonOrThrow(`${API_BASE}/locations/poi?${params.toString()}`, {}, 'Failed to fetch POIs');
 }
 
-export async function getBuddiesForUser(username) {
-  return await fetchJsonOrThrow(`/api/users/${username}/buddies`, {}, `Failed to fetch buddies for user ${username}`);
-}
-
-export async function getTripsByOrganizer(userId) {
-  return await fetchJsonOrThrow(`/api/trips/organizer/${userId}`, {}, 'Failed to fetch trips by organizer');
-}
-
-export async function getTripsByParticipant(userId) {
-  return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
-}
-
 //=============================================
-// WEATHER
+// WEATHER SERVICE
 //=============================================
 
 export async function getWeather(latitude, longitude) {

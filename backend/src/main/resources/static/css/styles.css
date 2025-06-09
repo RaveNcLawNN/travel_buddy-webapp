@@ -3,6 +3,7 @@
 /* 1. view specific */
 @import 'home.css';
 @import 'trips.css';
+@import 'trip-detail.css';
 
 /* 2. layout specific */
 @import 'general.css';

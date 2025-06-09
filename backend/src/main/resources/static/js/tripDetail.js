@@ -7,16 +7,30 @@ import { openAddLocationForm, openEditLocationForm } from "./locationModal.js";
 import { openEditTripForm, openBuddiesModal } from "./tripModal.js";
 import { getCurrentUser } from "./auth.js";
 import { addPoiFilterPanel, setMapMarker, clearMapMarkers } from "./map.js";
-import {getTripById, deleteTrip, updateTrip, getBuddiesForUser, getLocationsByTrip, createLocation, updateLocation, deleteLocation, searchPointsOfInterest } from "./api.js";
+import {
+  getTripById,
+  deleteTrip,
+  getLocationsByTrip,
+  createLocation,
+  deleteLocation,
+  searchPointsOfInterest,
+  getUserByUsername,
+  removeParticipantFromTrip
+} from "./api.js";
+
+
+app.replaceChildren();
+app.className = 'trip-detail-view';
 
 //=============================================
-// MAIN EXPORT
+// MAIN EXPORT FUNCTION
 //=============================================
 
 export async function loadTripDetail(id) {
-  let poiMarkers = [];
-  let currentTypes = [];
-  let currentRadius = 1000;
+
+  //=============================================
+  // INIT & CLEAR APP VIEW
+  //=============================================
 
   const app = document.getElementById("app");
   if (!app) return;
@@ -24,7 +38,7 @@ export async function loadTripDetail(id) {
   document.body.className = "trip-detail-view";
 
   //=============================================
-  // 1) LOAD TRIP FROM BE
+  // FETCH TRIP DATA
   //=============================================
 
   let trip;
@@ -35,141 +49,132 @@ export async function loadTripDetail(id) {
     return;
   }
 
-  let tripCoords = {
-    lat: trip.latitude,
-    lon: trip.longitude
-  };
-
   //=============================================
-  // 1.5) CHECK USER PERMISSION
+  // CHECK USER PERMISSION
   //=============================================
   const currentUser = getCurrentUser();
   const isOrganizer = trip.organizerId && currentUser && trip.organizerId === currentUser.id;
   const isParticipant = (trip.participantUsernames || []).includes(currentUser?.username);
+
   if (!isOrganizer && !isParticipant) {
     app.appendChild(createElement("div", { className: "alert alert-warning" }, "You do not have access to this trip."));
     return;
   }
 
   //=============================================
-  // 2) CONTAINER BUILD
+  // MAIN CONTAINER
   //=============================================
 
-  const container = createElement("div", { className: "container py-5" });
+  const container = createElement("div", { className: "container" });
+  const layout = createElement("div", { className: "trip-detail-layout" });
+  container.appendChild(layout);
 
-  // Buddies for this trip (all participants)
-  const buddies = trip.participantUsernames || [];
-  const organizerUsername = trip.organizerUsername;
-  const buddiesSection = createElement("div", { className: "mb-3" },
-    createElement("label", { className: "form-label" }, "Your Buddies for this trip:"),
-    buddies.length
-      ? createElement("div", {}, ...buddies.map(u => {
-          const isOrganizer = u === organizerUsername;
-          const isCurrentUser = u === currentUser?.username;
-          const badge = createElement("span", {
-            className: `badge ${isCurrentUser ? 'bg-danger' : 'bg-info'} text-white me-1 position-relative`,
-            title: isOrganizer ? "Trip Organizer" : ""
-          }, isCurrentUser ? `${u} (You)` : u);
-          // Add remove 'x' button if not organizer or current user
-          if (!isOrganizer && !isCurrentUser) {
-            const removeBtn = createElement("button", {
-              type: "button",
-              className: "buddy-remove-btn position-absolute",
-              style: `
-                top: -10px;
-                right: -4px;
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background:rgba(196, 39, 39, 0.86);
-                color: #fff;
-                border: none;
-                font-size: 1.1em;
-                font-weight: bold;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-                cursor: pointer;
-                z-index: 2;`,
-              title: "Remove from trip",
-              onclick: async (e) => {
-                e.stopPropagation();
-                if (!confirm(`Remove ${u} from this trip?`)) return;
-                try {
-                  // Find userId for username (fetch from backend)
-                  const res = await fetch(`/api/users/${u}`);
-                  if (!res.ok) throw new Error('User not found');
-                  const user = await res.json();
-                  await fetch(`/api/trips/${trip.id}/participants/${user.id}`, { method: 'DELETE' });
-                  await loadTripDetail(trip.id);
-                } catch (err) {
-                  alert('Failed to remove buddy: ' + err.message);
-                }
-              }
-            }, '×');
-            badge.appendChild(removeBtn);
-          }
-          return badge;
-        }))
-      : createElement("span", { className: "text-muted" }, "No buddies added yet.")
-  );
-  container.appendChild(buddiesSection);
+  //=============================================
+  // INFO PANEL
+  //=============================================
 
-  // Header: Title, Date, Status, Delete-Btn, Edit-Btn
-  const addBuddiesBtn = createElement("button", {
-    className: "btn btn-success me-2 d-flex align-items-center justify-content-center",
-    id: "addBuddiesBtn",
-    style: "height: 38px; min-width: 140px;"
-  }, createElement('span', {className: 'me-1'}, '+'), 'Add Buddies...');
-
-  addBuddiesBtn.onclick = () => {
-    openBuddiesModal(trip, () => loadTripDetail(trip.id));
-  };
-
-  const header = createElement("div", { className: "d-flex justify-content-between align-items-center mb-4" },
-    createElement("div", { id: "tripDetailsContainer" },
-      createElement("h2", { className: "mb-1", id: "tripTitleDisplay" }, trip.title),
-      createElement("p", { id: "tripInfoDisplay" }, `Destination: ${trip.destination}`,
-        createElement("br"), `From: ${trip.startDate} - To: ${trip.endDate}`,
-        createElement("br"), `Status: ${trip.status}`)
+  const infoPanel = createElement("div", { className: "trip-detail-info" },
+    createElement("h1", { id: "tripTitleDisplay" }, trip.title),
+    createElement("p", { id: "tripInfoDisplay" }, `Destination: ${trip.destination}`,
+      createElement("br"), `From: ${trip.startDate} - To: ${trip.endDate}`,
+      createElement("br"), `Status: ${trip.status}`
     ),
-    createElement("div", { id: "editDeleteBtn", className: "d-flex align-items-center" },
-      addBuddiesBtn,
-      createElement("button", { className: "btn btn-warning me-2", id: "editTripBtn" }, "Edit Trip"),
-      createElement("button", { className: "btn btn-danger", id: "deleteTripBtn" }, "Delete Trip")
+    createElement("div", { style: "margin-top: 1rem;" },
+      createElement("button", { className: "btn-edit", id: "editTripBtn" }, "Edit"),
+      createElement("button", { className: "btn-delete", id: "deleteTripBtn", style: "margin-left: .5rem;" }, "Delete")
     )
   );
-  container.appendChild(header);
+  layout.appendChild(infoPanel);
 
-  // Map Container
-  const mapContainer = createElement("div", { id: "trip-map", style: "height: 400px; margin-bottom: 1rem; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" });
-  container.appendChild(mapContainer);
 
-  // Add Location-Btn
-  const addLocBtn = createElement("button", { className: "btn btn-primary mb-3", id: "addLocationBtn" }, "Add Location");
-  container.appendChild(addLocBtn);
+  //=============================================
+  // BUDDIES SECTION
+  //=============================================
 
-  // Location List
-  const locationsListDiv = createElement("div", { id: "locationsList" });
-  container.appendChild(locationsListDiv);
+  const addBuddiesBtn = createElement("button", { className: "btn-add-buddies", id: "addBuddiesBtn" }, "+ Add Buddies…");
+  addBuddiesBtn.onclick = () => openBuddiesModal(trip, () => loadTripDetail(trip.id));
+  infoPanel.appendChild(addBuddiesBtn);
 
-  // Back-Btn
-  const backBtn = createElement("button", { className: "btn btn-secondary mt-4", onclick: () => { window.location.hash = "#trips"; } }, "← Back to Trips");
-  container.appendChild(backBtn);
+  const buddiesSection = renderBuddiesSection(trip, currentUser, () => loadTripDetail(trip.id));
+  infoPanel.appendChild(buddiesSection);
+
+  //=============================================
+  // MAP
+  //=============================================
+
+  const mapContainer = createElement("div", { id: "trip-map", className: "trip-detail-map" });
+  layout.appendChild(mapContainer);
+
+  //=============================================
+  // LOCATION PANEL
+  //=============================================
+
+  const locationPanel = createElement("div", { className: "trip-detail-locations" },
+    createElement("div", { className: "form-check mb-2" },
+      createElement("input", { className: "form-check-input", type: "checkbox", id: "showLocationsCheckbox", checked: true }),
+      createElement("label", { className: "form-check-label ms-1", htmlFor: "showLocationsCheckbox" }, "Show all visited locations on map")
+    ),
+    createElement("button", { className: "btn-add mb-2", id: "addLocationBtn" }, "Add Location"),
+    createElement("div", { id: "locationsList" })
+  );
+  layout.appendChild(locationPanel);
+  const locationsListDiv = locationPanel.querySelector("#locationsList");
+
+  //=============================================
+  // DESCRIPTION
+  //=============================================
+
+  const descriptionPanel = createElement("div", { className: "trip-detail-description" },
+    createElement("label", { htmlFor: "tripDescription", className: "form-label" }, "Trip Description:"),
+    createElement("textarea", { id: "tripDescription", className: "trip-description-textarea", placeholder: "Write something about your trip..." }, trip.description || ""
+    )
+  );
+  layout.appendChild(descriptionPanel);
+
+  //=============================================
+  // BACK BUTTON
+  //=============================================
+
+  container.appendChild(createElement("button", { className: "btn-back", onclick: () => (window.location.hash = "#trips") }, "← Back to Trips"));
   app.appendChild(container);
 
-  // Edit-Btn
-  document.getElementById("editTripBtn").addEventListener("click", () => {
-    getTripById(trip.id).then(freshTrip => {
-      openEditTripForm(freshTrip, async () => {
-        await loadTripDetail(trip.id);
-      });
-    });
+  //=============================================
+  // EVENT LISTENERS
+  //=============================================
+
+  document.getElementById("editTripBtn").onclick = () => {
+    openEditTripForm(trip, async () => loadTripDetail(trip.id));
+  };
+
+  document.getElementById("deleteTripBtn").onclick = async () => {
+    if (!confirm("Do you really want to delete this trip?")) return;
+    try {
+      await deleteTrip(trip.id);
+      window.location.hash = "#trips";
+    } catch (e) {
+      alert("Error deleting trip: " + e.message);
+    }
+  };
+
+  document.getElementById("addLocationBtn").onclick = () => {
+    openAddLocationForm(trip.id, loadAndRenderLocations);
+  };
+
+  // optional: Description speichern (Enter-Blur)
+  document.getElementById("tripDescription").addEventListener("blur", async (e) => {
+    const newText = e.target.value;
+    if (newText !== (trip.description || "")) {
+      try {
+        await updateTrip(trip.id, { description: newText });
+        trip.description = newText;
+      } catch (err) {
+        alert("Failed to save description: " + err.message);
+      }
+    }
   });
 
   //=============================================
-  // 3) LOAD LOCATIONS & RENDER
+  // LOAD LOCATIONS & RENDER
   //=============================================
 
   async function loadAndRenderLocations() {
@@ -177,148 +182,49 @@ export async function loadTripDetail(id) {
     try {
       locations = await getLocationsByTrip(trip.id);
     } catch {
-      locationsListDiv.appendChild(
-        createElement("p", { className: "text-danger" }, "Error loading locations.")
-      );
+      locationsListDiv.replaceChildren(createElement("p", { style: "color:red" }, "Error loading locations."));
       return;
     }
     renderLocationsList(locations);
     initMapWithLocations(locations);
   }
 
-  // Initialize Map
-  async function initMapWithLocations(locations) {
-  if (window.tripDetailMap) {
-    window.tripDetailMap.remove();
-  }
-
-  let mapCenter = [0, 0];
-  let zoom = 2;
-  if (locations.length > 0) {
-    mapCenter = [locations[0].latitude, locations[0].longitude];
-    zoom = 13;
-  } else if (trip.latitude && trip.longitude) {
-    mapCenter = [trip.latitude, trip.longitude];
-    zoom = 13;
-  }
-
-  const map = L.map("trip-map").setView(mapCenter, zoom);
-  window.tripDetailMap = map;
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-
-  const tripCoords = { lat: trip.latitude, lon: trip.longitude };
-  if (trip.latitude && trip.longitude) {
-    L.marker([trip.latitude, trip.longitude])
-      .addTo(map)
-      .bindPopup(`<strong>${trip.destination}</strong><br>(Destination)`);
-  }
-
-  let poiMarkers = [];
-  let currentTypes = [];
-  let currentRadius = 1000;
-
-  addPoiFilterPanel(map, (selectedTypes, radius) => {
-    currentTypes = selectedTypes;
-    currentRadius = radius;
-    loadPois(tripCoords.lat, tripCoords.lon);
-  });
-
-  // Hilfsfunk­tion zum Laden und Darstellen der POIs
-  async function loadPois(lat, lon) {
-    poiMarkers = clearMapMarkers(map, poiMarkers);
-    if (!currentTypes.length) return;
-
-    try {
-      const pois = await searchPointsOfInterest({
-        latitude: lat,
-        longitude: lon,
-        radius: currentRadius,
-        types: currentTypes
-      });
-
-      pois.forEach(poi => {
-        const popupContent = `
-          <strong>${poi.name}</strong><br>
-          Type: ${poi.type}<br>
-          Address: ${poi.address || '–'}<br>
-          <button
-            class="btn btn-sm btn-primary add-poi-btn"
-            data-name="${encodeURIComponent(poi.name)}"
-            data-lat="${poi.latitude}"
-            data-lon="${poi.longitude}"
-            data-type="${encodeURIComponent(poi.type)}"
-            data-address="${encodeURIComponent(poi.address || '')}"
-          >Add to Trip</button>
-        `;
-        const marker = setMapMarker(
-          map,
-          poi.latitude,
-          poi.longitude,
-          popupContent,
-          null,
-          (poi.type || "default").toLowerCase()
-        );
-        poiMarkers.push(marker);
-      });
-    } catch (err) {
-      console.error("Failed to load POIs:", err);
-    }
-  }
-
-  // Event-Listener für „Add to Trip“-Buttons in Popups
-  map.on("popupopen", e => {
-    const btn = e.popup._contentNode.querySelector(".add-poi-btn");
-    if (!btn) return;
-
-    btn.addEventListener("click", async () => {
-      const payload = {
-        name: decodeURIComponent(btn.dataset.name),
-        latitude: parseFloat(btn.dataset.lat),
-        longitude: parseFloat(btn.dataset.lon),
-        type: decodeURIComponent(btn.dataset.type),
-        address: decodeURIComponent(btn.dataset.address)
-      };
-
-      try {
-        await createLocation(trip.id, payload);
-        await loadAndRenderLocations();
-        map.closePopup();
-      } catch (err) {
-        alert("Error adding location: " + err.message);
-      }
-    });
-  });
-
-  // Initialer POI-Load (wird erst nach Filter-Auswahl wirklich aktive Marker setzen)
-  loadPois(tripCoords.lat, tripCoords.lon);
-}
-
-  // Render Location-List
   function renderLocationsList(locations) {
     locationsListDiv.replaceChildren();
-    if (locations.length === 0) {
+    if (!locations.length) {
       locationsListDiv.appendChild(createElement("p", {}, "No locations available."));
       return;
     }
     locations.forEach((loc) => {
-      const card = createElement("div", { className: "card mb-3" },
-        createElement("div", { className: "card-body" },
-          createElement("h5", { className: "card-title" }, loc.name),
-          createElement("p", { className: "card-text" }, `Type: ${loc.type}`,
-            createElement("br"), `Lat: ${loc.latitude}, Lon: ${loc.longitude}`,
-            createElement("br"), `Address: ${loc.address || ""}`),
-          createElement("p", { className: "card-text" }, loc.description || ""),
-          createElement("button", { className: "btn btn-sm btn-warning me-2", 
-            onclick: () => openEditLocationForm(loc, trip.id, async () => { await loadAndRenderLocations(); }) }, "Edit"),
-          createElement("button", { className: "btn btn-sm btn-danger", onclick: () => onDeleteLocation(loc.id) }, "Delete"))
+      const card = createElement(
+        "div",
+        { className: "card" },
+        createElement("strong", {}, loc.name),
+        createElement("br"),
+        `${loc.type} | ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`,
+        createElement("br"),
+        loc.address || "",
+        createElement("div", { style: "margin-top:.5rem" },
+          createElement(
+            "button",
+            { className: "btn-edit-location", onclick: () => openEditLocationForm(loc, trip.id, loadAndRenderLocations) },
+            "Edit"
+          ),
+          createElement(
+            "button",
+            {
+              className: "btn-delete-location",
+              style: "margin-left:.5rem",
+              onclick: () => onDeleteLocation(loc.id)
+            },
+            "Delete"
+          )
+        )
       );
       locationsListDiv.appendChild(card);
     });
   }
 
-  // Delete Location
   async function onDeleteLocation(locationId) {
     if (!confirm("Do you really want to delete this location?")) return;
     try {
@@ -329,24 +235,185 @@ export async function loadTripDetail(id) {
     }
   }
 
-  // Delete Trip
-  document.getElementById("deleteTripBtn").addEventListener("click", async () => {
-    if (!confirm("Do you really want to delete this trip?")) return;
-    try {
-      await deleteTrip(trip.id);
-      window.location.hash = "#trips";
-    } catch (e) {
-      alert("Error deleting trip: " + e.message);
+  //=============================================
+  // MAP
+  //=============================================
+
+  async function initMapWithLocations(locations) {
+    if (window.tripDetailMap) window.tripDetailMap.remove();
+
+    let center = [trip.latitude || 0, trip.longitude || 0];
+    if (locations.length) center = [locations[0].latitude, locations[0].longitude];
+
+    const map = L.map("trip-map").setView(center, center[0] ? 13 : 2);
+    window.tripDetailMap = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    // Main destination marker
+    if (trip.latitude && trip.longitude) {
+      L.marker([trip.latitude, trip.longitude])
+        .addTo(map)
+        .bindPopup(`<strong>${trip.destination}</strong> (Destination)`);
     }
-  });
 
-  // Add Location
-  document.getElementById("addLocationBtn").addEventListener("click", () => {
-    openAddLocationForm(trip.id, async () => {
-      await loadAndRenderLocations();
+    // Location markers toggle
+    let locationMarkers = [];
+    function showLocationMarkers(show) {
+      locationMarkers = clearMapMarkers(map, locationMarkers);
+      if (!show) return;
+      locations.forEach((loc) => {
+        const marker = setMapMarker(
+          map,
+          loc.latitude,
+          loc.longitude,
+          `<strong>${loc.name}</strong><br>${loc.address || ""}`,
+          null,
+          (loc.type || "default").toLowerCase()
+        );
+        locationMarkers.push(marker);
+      });
+    }
+    showLocationMarkers(true);
+    document.getElementById("showLocationsCheckbox").onchange = (e) => showLocationMarkers(e.target.checked);
+
+    // POIs
+    let poiMarkers = [];
+    let currentTypes = [];
+    let currentRadius = 1000;
+
+    addPoiFilterPanel(map, (types, radius) => {
+      currentTypes = types;
+      currentRadius = radius;
+      loadPois();
     });
+
+    async function loadPois() {
+      poiMarkers = clearMapMarkers(map, poiMarkers);
+      if (!trip.latitude || !trip.longitude || !currentTypes.length) return;
+
+      const pois = await searchPointsOfInterest({
+        latitude: trip.latitude,
+        longitude: trip.longitude,
+        radius: currentRadius,
+        types: currentTypes
+      });
+
+      pois.forEach((p) => {
+        const popupContent = `
+          <strong>${p.name}</strong><br>
+          Type: ${p.type}<br>
+          ${p.address || ""}<br>
+          <button
+            class="btn-add-poi"
+            data-name="${encodeURIComponent(p.name)}"
+            data-lat="${p.latitude}"
+            data-lon="${p.longitude}"
+            data-type="${encodeURIComponent(p.type)}"
+            data-address="${encodeURIComponent(p.address || "")}"
+          >Add to Trip</button>
+        `;
+
+        const m = setMapMarker(
+          map,
+          p.latitude,
+          p.longitude,
+          popupContent,
+          null,
+          (p.type || "default").toLowerCase()
+        );
+        poiMarkers.push(m);
+      });
+    }
+
+    // Handle Add to Trip clicks inside POI popups
+    map.on("popupopen", (e) => {
+      const btn = e.popup._contentNode.querySelector(".btn-add-poi");
+      if (!btn) return;
+
+      btn.addEventListener("click", async () => {
+        const payload = {
+          name: decodeURIComponent(btn.dataset.name),
+          latitude: parseFloat(btn.dataset.lat),
+          longitude: parseFloat(btn.dataset.lon),
+          type: decodeURIComponent(btn.dataset.type),
+          address: decodeURIComponent(btn.dataset.address)
+        };
+        try {
+          await createLocation(trip.id, payload);
+          await loadAndRenderLocations();
+          map.closePopup();
+        } catch (err) {
+          alert("Error adding location: " + err.message);
+        }
+      });
+    });
+
+    // Initial POI load
+    loadPois();
+  }
+
+  // ---------- START ----------
+  await loadAndRenderLocations();
+}
+
+//=============================================
+// RENDER BUDDIES SECTION
+//=============================================
+
+function renderBuddiesSection(trip, currentUser, onReload) {
+  const section = createElement(
+    "div",
+    { style: "margin-top:1rem" },
+    createElement("label", {}, "Your Buddies for this trip:")
+  );
+
+  const list = createElement("div");
+  const organizerUsername = trip.organizerUsername;
+
+  (trip.participantUsernames || []).forEach((u) => {
+    const isSelf = u === currentUser?.username;
+    const isOrganizer = u === organizerUsername;
+
+    const badge = createElement(
+      "span",
+      {
+        className: "badge position-relative",
+        style: `background:${isSelf ? "#d9534f" : "#17a2b8"};color:#fff;margin-right:.25rem;padding:.25rem .5rem;border-radius:.25rem;`
+      },
+      isSelf ? `${u} (You)` : u
+    );
+
+    // Show remove button for non-organizer/non-self participants
+    if (!isOrganizer && !isSelf) {
+      const removeBtn = createElement(
+        "button",
+        {
+          type: "button",
+          className: "btn-remove-buddies",
+          title: "Remove from trip",
+          onclick: async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Remove ${u} from this trip?`)) return;
+            try {
+              const user = await getUserByUsername(u);
+              await removeParticipantFromTrip(trip.id, user.id);
+              onReload();
+            } catch (err) {
+              alert("Failed to remove buddy: " + err.message);
+            }
+          }
+        },
+        "×"
+      );
+      badge.appendChild(removeBtn);
+    }
+
+    list.appendChild(badge);
   });
 
-  // Initial Location Load
-  await loadAndRenderLocations();
+  section.appendChild(list);
+  return section;
 }
