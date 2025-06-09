@@ -4,6 +4,7 @@
 @import 'general.css';
 @import 'text.css';
 @import 'colors.css';
+@import 'bg.css';
 
 /* 2. special css */
 @import 'animated-weather.css';

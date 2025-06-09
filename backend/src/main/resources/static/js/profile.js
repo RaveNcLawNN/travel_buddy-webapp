@@ -23,7 +23,7 @@ export function loadProfile() {
   const sidebarCol = createElement('div', { className: 'col-12 col-md-4' });
   const sidebarCard = createElement('div', { className: 'card' });
   const sidebarBody = createElement('div', { className: 'card-body' });
-  sidebarBody.appendChild(createElement('h4', { className: 'card-title mb-3' }, 'Profile Picture'));
+  sidebarBody.appendChild(createElement('h4', { className: 'card-title text-h2 mb-3' }, 'Profile Picture'));
 
   // File input (hidden) and upload button
   const fileInput = createElement('input', {
@@ -70,12 +70,12 @@ export function loadProfile() {
 
   // Main Content: Profile Info
   const mainCol = createElement('div', { className: 'col-12 col-md-8' });
-  const mainCard = createElement('div', { className: 'card' });
+  const mainCard = createElement('div', { className: 'card bg-grad-medium' });
   const mainBody = createElement('div', { className: 'card-body' });
-  mainBody.appendChild(createElement('h2', { className: 'card-title mb-4' }, 'My Profile'));
+  mainBody.appendChild(createElement('h1', { className: 'card-title text-h1 mb-3' }, 'My Profile'));
 
   // Description Section
-  mainBody.appendChild(createElement('h4', { className: 'mb-3' }, 'About Me'));
+  mainBody.appendChild(createElement('h4', { className: 'text-highlight mb-4' }, 'About Me:'));
   const textarea = createElement('textarea', {
     className: 'form-control mb-3',
     rows: 5,

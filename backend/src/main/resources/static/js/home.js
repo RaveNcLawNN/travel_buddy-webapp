@@ -28,13 +28,13 @@ import {
  */
 function createHeroSection(onSearch) {
   const heading = createElement('h1', {
-    className: 'text-h1',
+    className: 'text-h1-home',
     textContent: 'Travel Buddy',
     id: 'hero-heading'
   });
 
   const subtitle = createElement('p', {
-    className: 'text-highlight',
+    className: 'text-highlight-home',
     textContent: 'Find your next adventure:'
   });
 

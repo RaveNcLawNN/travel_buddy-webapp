@@ -24,7 +24,7 @@ export async function loadTrips(page = 1) {
 
   // Layout: Header + Button
   const container = createElement("div", { className: "container-fluid py-5 pt-5 pb-5 d-flex flex-column align-items-center" });
-  const heading = createElement("h2", { className: "text-h2-center mb-4" }, "🌍 My Trips");
+  const heading = createElement("h1", { className: "text-h1-center mb-5" }, "🌍 My Trips");
   const newTripBtn = createElement("button", { className: "trip-add-btn" }, "+");
   container.append(heading, newTripBtn);
 
@@ -94,7 +94,7 @@ export async function loadTrips(page = 1) {
 
     pageTrips.forEach((trip) => {
       const card = createElement("button", { type: "button", className: "trip-card btn btn-outline-dark w-100 py-5" },
-        createElement("h1", { className: "mb-1" }, trip.title),
+        createElement("h2", { className: "mb-3" }, trip.title),
         createElement("small", {}, `${trip.startDate} - ${trip.endDate}`)
       );
       card.addEventListener("click", () => {

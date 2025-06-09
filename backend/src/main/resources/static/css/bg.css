@@ -1,0 +1,7 @@
+.bg-grad-medium {
+  background: var(--color-gradient-medium);
+}
+
+.bg-plain-dark {
+  background: var(--color-secondary);
+}
