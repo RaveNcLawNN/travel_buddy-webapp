@@ -2,7 +2,6 @@
 
 import { createElement } from './createElement.js';
 
-// Mapping Wettercode → CSS-Klasse
 const weatherCssMap = {
   0:  'clear',
   1:  'mostlycloudy',
@@ -60,15 +59,13 @@ export function renderCurrent(cur, container) {
     return;
   }
 
-  // Icon zentriert
   const iconWrapper = createElement('div', { className: 'd-flex justify-content-center mb-3' });
-  const weatherIcon = createElement('div', { className: 'weatherIcon' });
+  const weatherIcon = createElement('div', { className: 'weatherIcon mt-4' });
   const iconDiv     = createElement('div', { className: getCssClassForCode(cur.weather_code) });
   iconDiv.append(createElement('div', { className: 'inner' }));
   weatherIcon.append(iconDiv);
   iconWrapper.append(weatherIcon);
 
-  // Texte
   const textBlock = createElement('div', { className: 'text-center' },
     createElement('p', { textContent: `Zeit: ${formatDateTime(cur.time)}` }),
     createElement('p', { textContent: `Temperatur: ${cur.temperature.toFixed(1)} °C` }),
@@ -89,15 +86,13 @@ export function renderHourly(hourly, index, container) {
 
   const h = hourly[index];
 
-  // Icon zentriert
   const iconWrapper = createElement('div', { className: 'd-flex justify-content-center mb-3' });
-  const weatherIcon = createElement('div', { className: 'weatherIcon' });
+  const weatherIcon = createElement('div', { className: 'weatherIcon mt-4' });
   const iconDiv     = createElement('div', { className: getCssClassForCode(h.weather_code) });
   iconDiv.append(createElement('div', { className: 'inner' }));
   weatherIcon.append(iconDiv);
   iconWrapper.append(weatherIcon);
 
-  // Texte zentriert
   const textBlock = createElement('div', { className: 'text-center mb-3' },
     createElement('p', { textContent: `Zeit: ${formatDateTime(h.time)}` }),
     createElement('p', { textContent: `Temp: ${h.temperature.toFixed(1)} °C` }),
@@ -107,9 +102,8 @@ export function renderHourly(hourly, index, container) {
     createElement('p', { textContent: `Regen-Wahrscheinlichkeit: ${h.precipitation_probability}%` })
   );
 
-  // Navigation unterhalb zentriert
-  const prev = createElement('button', { className: 'btn btn-sm btn-secondary me-2', textContent: '←' });
-  const next = createElement('button', { className: 'btn btn-sm btn-secondary ms-2', textContent: '→' });
+  const prev = createElement('button', { className: 'btn btn-sm btn-primary me-2 mt-2 mb-2', textContent: '←' });
+  const next = createElement('button', { className: 'btn btn-sm btn-primary ms-2 mt-2 mb-2', textContent: '→' });
   prev.disabled = index === 0;
   next.disabled = index === hourly.length - 1;
   prev.addEventListener('click', () => renderHourly(hourly, index - 1, container));
@@ -128,15 +122,13 @@ export function renderDaily(daily, index, container) {
 
   const d = daily[index];
 
-  // Icon zentriert
   const iconWrapper = createElement('div', { className: 'd-flex justify-content-center mb-3' });
-  const weatherIcon = createElement('div', { className: 'weatherIcon' });
+  const weatherIcon = createElement('div', { className: 'weatherIcon mt-4' });
   const iconDiv     = createElement('div', { className: getCssClassForCode(d.weather_code) });
   iconDiv.append(createElement('div', { className: 'inner' }));
   weatherIcon.append(iconDiv);
   iconWrapper.append(weatherIcon);
 
-  // Texte zentriert
   const textBlock = createElement('div', { className: 'text-center mb-3' },
     createElement('p', { textContent: `Datum: ${formatDate(d.time)}` }),
     createElement('p', { textContent: `Min: ${d.tempMin.toFixed(1)} °C` }),
@@ -146,9 +138,8 @@ export function renderDaily(daily, index, container) {
     createElement('p', { textContent: `Regen-Wahrscheinlichkeit: ${d.precipitation_probability}%` })
   );
 
-  // Navigation unterhalb zentriert
-  const prev = createElement('button', { className: 'btn btn-sm btn-secondary me-2', textContent: '←' });
-  const next = createElement('button', { className: 'btn btn-sm btn-secondary ms-2', textContent: '→' });
+  const prev = createElement('button', { className: 'btn btn-sm me-2 btn-primary mt-2 mb-2', textContent: '←' });
+  const next = createElement('button', { className: 'btn btn-sm ms-2 btn-primary mt-2 mb-2', textContent: '→' });
   prev.disabled = index === 0;
   next.disabled = index === daily.length - 1;
   prev.addEventListener('click', () => renderDaily(daily, index - 1, container));

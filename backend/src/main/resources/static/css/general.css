@@ -2,6 +2,7 @@
 
 html, body {
   margin: 0;
+  background-color: var(--color-bg-light);
 }
 
 body {
@@ -15,11 +16,14 @@ body {
 }
 
 footer.navbar {
-    min-height: 8vh;
-    background-color: #171717 !important;
+  min-height: 10vh;
+  background-color: var(--color-secondary) !important;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.navbar {
-    min-height: 8vh;
-    background-color: #171717 !important;
+nav.navbar {
+  min-height: 10vh;
+  background-color: var(--color-secondary) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
