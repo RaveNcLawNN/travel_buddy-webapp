@@ -1,172 +1,293 @@
-//=============================================
-// AJAX FETCHES TO BE & EXTERNAL APIs
-//=============================================
+// =============================================
+// AJAX FETCHES TO BACKEND & EXTERNAL APIS
+// =============================================
 
 const API_BASE = '/api';
 
-//=============================================
-// HELPER FUNCTION FOR ERROR HANDLING
-//=============================================
-
-async function fetchJsonOrThrow(url, options, errorMsg) {
+// =============================================
+// HELPER: Fetch JSON or throw with error message
+// =============================================
+/**
+ * Performs a fetch request, throws if response not ok,
+ * parses JSON body if present.
+ * @param {string} url - The endpoint URL
+ * @param {object} [options={}] - Fetch options (method, headers, body, etc.)
+ * @param {string} [errorMsg='Request failed'] - Error message prefix
+ * @returns {Promise<any>} Parsed JSON response
+ * @throws {Error} When response is not ok or JSON parsing fails
+ */
+async function fetchJsonOrThrow(url, options = {}, errorMsg = 'Request failed') {
   const res = await fetch(url, options);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`${errorMsg}: ${text}`);
   }
-
-  // Parse only if body !empty
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
 
-//=============================================
+// =============================================
 // TRIPS
-//=============================================
-
-// Fetch all trips
+// =============================================
+/**
+ * Fetches all trips.
+ * @returns {Promise<Array>} Array of trip objects
+ */
 export async function getAllTrips() {
-  return await fetchJsonOrThrow(`${API_BASE}/trips`, {}, 'Failed to fetch trips');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips`,
+    {},
+    'Failed to fetch trips'
+  );
 }
 
-// Fetch a specific trip by ID
+/**
+ * Fetches a single trip by ID.
+ * @param {string} id - Trip identifier
+ * @returns {Promise<Object>} Trip object
+ */
 export async function getTripById(id) {
-  return await fetchJsonOrThrow(`${API_BASE}/trips/${id}`, {}, `Trip not found (id=${id})`);
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips/${encodeURIComponent(id)}`,
+    {},
+    `Trip not found (id=${id})`
+  );
 }
 
-// Create a new trip
+/**
+ * Creates a new trip.
+ * @param {Object} payload - Trip data
+ * @returns {Promise<Object>} Created trip object
+ */
 export async function createTrip(payload) {
-  return await fetchJsonOrThrow(`${API_BASE}/trips`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }, 'Failed to create trip');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    'Failed to create trip'
+  );
 }
 
-// Update an existing trip
+/**
+ * Updates an existing trip.
+ * @param {string} id - Trip identifier
+ * @param {Object} payload - Updated trip data
+ * @returns {Promise<Object>} Updated trip object
+ */
 export async function updateTrip(id, payload) {
-  return await fetchJsonOrThrow(`${API_BASE}/trips/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }, 'Failed to update trip');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    'Failed to update trip'
+  );
 }
 
-// Delete a trip
+/**
+ * Deletes a trip by ID.
+ * @param {string} id - Trip identifier
+ * @returns {Promise<void>}
+ */
 export async function deleteTrip(id) {
-  const res = await fetch(`${API_BASE}/trips/${id}`, {
-    method: 'DELETE',
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to delete trip (id=${id})`);
-  }
+  const res = await fetch(`${API_BASE}/trips/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Failed to delete trip (id=${id})`);
 }
 
-//=============================================
+// =============================================
 // LOCATIONS
-//=============================================
-
-// Get all locations associated with a specific trip
+// =============================================
+/**
+ * Fetches locations for a given trip.
+ * @param {string} tripId - Trip identifier
+ * @returns {Promise<Array>} Array of location objects
+ */
 export async function getLocationsByTrip(tripId) {
-  return await fetchJsonOrThrow(`${API_BASE}/locations/trips/${tripId}`, {}, `Failed to fetch locations for trip ${tripId}`);
+  return await fetchJsonOrThrow(
+    `${API_BASE}/locations/trips/${encodeURIComponent(tripId)}`,
+    {},
+    `Failed to fetch locations for trip ${tripId}`
+  );
 }
 
-// Add a new location to a trip
+/**
+ * Adds a new location to a trip.
+ * @param {string} tripId - Trip identifier
+ * @param {Object} payload - Location data
+ * @returns {Promise<Object>} Created location object
+ */
 export async function createLocation(tripId, payload) {
-  return await fetchJsonOrThrow(`${API_BASE}/locations/trips/${tripId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }, 'Failed to create location');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/locations/trips/${encodeURIComponent(tripId)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    'Failed to create location'
+  );
 }
 
-// Update an existing location
+/**
+ * Updates an existing location.
+ * @param {string} id - Location identifier
+ * @param {Object} payload - Updated location data
+ * @returns {Promise<Object>} Updated location object
+ */
 export async function updateLocation(id, payload) {
-  return await fetchJsonOrThrow(`${API_BASE}/locations/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }, 'Failed to update location');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/locations/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    'Failed to update location'
+  );
 }
 
-// Delete a specific location
+/**
+ * Deletes a location by ID.
+ * @param {string} id - Location identifier
+ * @returns {Promise<void>}
+ */
 export async function deleteLocation(id) {
-  const res = await fetch(`${API_BASE}/locations/${id}`, { method: 'DELETE' });
-  if (!res.ok) {
-    throw new Error(`Failed to delete location (id=${id})`);
-  }
+  const res = await fetch(`${API_BASE}/locations/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Failed to delete location (id=${id})`);
 }
 
-//=============================================
+// =============================================
 // USER & PARTICIPANT ENDPOINTS
-//=============================================
-
-// Get user details by username
+// =============================================
+/**
+ * Fetches user details by username.
+ * @param {string} username - User's username
+ * @returns {Promise<Object>} User object
+ */
 export async function getUserByUsername(username) {
-  return await fetchJsonOrThrow(`/api/users/${username}`, {}, `User not found (${username})`);
+  return await fetchJsonOrThrow(
+    `${API_BASE}/users/${encodeURIComponent(username)}`,
+    {},
+    `User not found (${username})`
+  );
 }
 
-// Get buddy list for a specific user
+/**
+ * Fetches a user's buddy list.
+ * @param {string} username - User's username
+ * @returns {Promise<Array>} Array of buddy objects
+ */
 export async function getBuddiesForUser(username) {
-  return await fetchJsonOrThrow(`/api/users/${username}/buddies`, {}, `Failed to fetch buddies for user ${username}`);
+  return await fetchJsonOrThrow(
+    `${API_BASE}/users/${encodeURIComponent(username)}/buddies`,
+    {},
+    `Failed to fetch buddies for user ${username}`
+  );
 }
 
-// Remove a user from a trip's participant list
+/**
+ * Removes a participant from a trip.
+ * @param {string} tripId - Trip identifier
+ * @param {string} userId - User identifier to remove
+ * @returns {Promise<void>}
+ */
 export async function removeParticipantFromTrip(tripId, userId) {
-  return await fetchJsonOrThrow(`/api/trips/${tripId}/participants/${userId}`, {
-    method: 'DELETE'
-  }, `Failed to remove participant ${userId} from trip ${tripId}`);
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips/${encodeURIComponent(tripId)}/participants/${encodeURIComponent(userId)}`,
+    { method: 'DELETE' },
+    `Failed to remove participant ${userId} from trip ${tripId}`
+  );
 }
 
-//=============================================
-//TRIP FILTERING BY USER ROLE
-//=============================================
-
-// Get trips where the user is the organizer
+// =============================================
+// TRIP FILTERING BY USER ROLE
+// =============================================
+/**
+ * Fetches trips organized by a specific user.
+ * @param {string} userId - Organizer's user ID
+ * @returns {Promise<Array>} Array of trip objects
+ */
 export async function getTripsByOrganizer(userId) {
-  return await fetchJsonOrThrow(`/api/trips/organizer/${userId}`, {}, 'Failed to fetch trips by organizer');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips/organizer/${encodeURIComponent(userId)}`,
+    {},
+    'Failed to fetch trips by organizer'
+  );
 }
 
-// Get trips where the user is a participant
+/**
+ * Fetches trips where a user is a participant.
+ * @param {string} userId - Participant's user ID
+ * @returns {Promise<Array>} Array of trip objects
+ */
 export async function getTripsByParticipant(userId) {
-  return await fetchJsonOrThrow(`/api/trips/participant/${userId}`, {}, 'Failed to fetch trips by participant');
+  return await fetchJsonOrThrow(
+    `${API_BASE}/trips/participant/${encodeURIComponent(userId)}`,
+    {},
+    'Failed to fetch trips by participant'
+  );
 }
 
-//=============================================
-// EXTERNAL APIs
-//=============================================
-
-// Search for location suggestions
+// =============================================
+// EXTERNAL API: LOCATION SEARCH AND POIS
+// =============================================
+/**
+ * Searches for location suggestions based on query.
+ * @param {string} query - Search term for location
+ * @returns {Promise<Array>} Array of location matches
+ */
 export async function searchLocation(query) {
-  return await fetchJsonOrThrow(`${API_BASE}/locations/search?query=${encodeURIComponent(query)}`, {}, 'Failed to search location');
+  const url = `${API_BASE}/locations/search?query=${encodeURIComponent(query)}`;
+  return await fetchJsonOrThrow(
+    url,
+    {},
+    `Failed to search location for "${query}"`
+  );
 }
 
-// Search for POIs near a given coordinate
-export async function searchPointsOfInterest({ latitude, longitude, radius = 1000, types = '' }) {
-  const params = new URLSearchParams({
+/**
+ * Fetches points of interest near given coordinates.
+ * @param {{ latitude: number, longitude: number, radius?: number, types?: string[] }} params - Search parameters
+ * @returns {Promise<Array>} Array of POI objects
+ */
+export async function searchPointsOfInterest({ latitude, longitude, radius = 1000, types = [] }) {
+  const qs = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
     radius: radius.toString(),
-    types: Array.isArray(types) ? types.join(',') : types,
+    types: types.join(',')
   });
-  return await fetchJsonOrThrow(`${API_BASE}/locations/poi?${params.toString()}`, {}, 'Failed to fetch POIs');
+  const url = `${API_BASE}/locations/poi?${qs.toString()}`;
+  return await fetchJsonOrThrow(
+    url,
+    {},
+    'Failed to fetch POIs'
+  );
 }
 
-//=============================================
-// WEATHER SERVICE
-//=============================================
-
+// =============================================
+// EXTERNAL API: WEATHER
+// =============================================
+/**
+ * Fetches weather forecast for given coordinates.
+ * @param {number} latitude - Geographic latitude
+ * @param {number} longitude - Geographic longitude
+ * @returns {Promise<any>} Weather forecast data
+ */
 export async function getWeather(latitude, longitude) {
-  const params = new URLSearchParams({
+  const qs = new URLSearchParams({
     latitude: latitude.toString(),
-    longitude: longitude.toString(),
-  }).toString();
-
-  const data = await fetchJsonOrThrow(
-    `${API_BASE}/weather/forecast?${params}`,
+    longitude: longitude.toString()
+  });
+  const url = `${API_BASE}/weather/forecast?${qs.toString()}`;
+  return await fetchJsonOrThrow(
+    url,
     {},
     `Failed to fetch weather for (${latitude}, ${longitude})`
   );
-
-  return data;
 }
