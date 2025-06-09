@@ -15,7 +15,8 @@ import {
   deleteLocation,
   searchPointsOfInterest,
   getUserByUsername,
-  removeParticipantFromTrip
+  removeParticipantFromTrip,
+  updateTrip
 } from "./api.js";
 
 
@@ -125,9 +126,31 @@ export async function loadTripDetail(id) {
   //=============================================
 
   const descriptionPanel = createElement("div", { className: "trip-detail-description" },
-    createElement("label", { htmlFor: "tripDescription", className: "form-label" }, "Trip Description:"),
-    createElement("textarea", { id: "tripDescription", className: "trip-description-textarea", placeholder: "Write something about your trip..." }, trip.description || ""
-    )
+    createElement("div", { className: "d-flex justify-content-between align-items-center mb-2" },
+      createElement("label", { htmlFor: "tripDescription", className: "form-label mb-0" }, "Trip Description:"),
+      createElement("div", { className: "description-actions" },
+        createElement("button", { 
+          className: "btn btn-outline-primary btn-sm", 
+          id: "editDescriptionBtn",
+          style: "display: none;"
+        }, "Edit"),
+        createElement("button", { 
+          className: "btn btn-primary btn-sm ms-2", 
+          id: "saveDescriptionBtn",
+          style: "display: none;"
+        }, "Save")
+      )
+    ),
+    createElement("div", { 
+      id: "descriptionDisplay", 
+      className: "trip-description-display"
+    }, trip.description || ""),
+    createElement("textarea", { 
+      id: "tripDescription", 
+      className: "trip-description-textarea", 
+      placeholder: "Write something about your trip...",
+      style: "display: none;"
+    }, trip.description || "")
   );
   layout.appendChild(descriptionPanel);
 
@@ -160,18 +183,45 @@ export async function loadTripDetail(id) {
     openAddLocationForm(trip.id, loadAndRenderLocations);
   };
 
-  // optional: Description speichern (Enter-Blur)
-  document.getElementById("tripDescription").addEventListener("blur", async (e) => {
-    const newText = e.target.value;
-    if (newText !== (trip.description || "")) {
-      try {
-        await updateTrip(trip.id, { description: newText });
-        trip.description = newText;
-      } catch (err) {
-        alert("Failed to save description: " + err.message);
-      }
+  // Description edit/save functionality
+  const descriptionDisplay = document.getElementById("descriptionDisplay");
+  const descriptionTextarea = document.getElementById("tripDescription");
+  const editDescriptionBtn = document.getElementById("editDescriptionBtn");
+  const saveDescriptionBtn = document.getElementById("saveDescriptionBtn");
+
+  editDescriptionBtn.onclick = () => {
+    descriptionDisplay.style.display = "none";
+    descriptionTextarea.style.display = "block";
+    descriptionTextarea.value = trip.description || "";
+    editDescriptionBtn.style.display = "none";
+    saveDescriptionBtn.style.display = "inline-block";
+    descriptionTextarea.focus();
+  };
+
+  saveDescriptionBtn.onclick = async () => {
+    const newText = descriptionTextarea.value.trim();
+    try {
+      // Include all required trip data in the update
+      const updatedTrip = {
+        ...trip,
+        description: newText
+      };
+      await updateTrip(trip.id, updatedTrip);
+      trip.description = newText;
+      descriptionDisplay.textContent = newText || "No description available.";
+      descriptionDisplay.style.display = "block";
+      descriptionTextarea.style.display = "none";
+      editDescriptionBtn.style.display = "inline-block";
+      saveDescriptionBtn.style.display = "none";
+    } catch (err) {
+      alert("Failed to save description: " + err.message);
     }
-  });
+  };
+
+  // Show edit button if user is organizer or participant
+  if (isOrganizer || isParticipant) {
+    editDescriptionBtn.style.display = "inline-block";
+  }
 
   //=============================================
   // LOAD LOCATIONS & RENDER
@@ -399,7 +449,11 @@ function renderBuddiesSection(trip, currentUser, onReload) {
             if (!confirm(`Remove ${u} from this trip?`)) return;
             try {
               const user = await getUserByUsername(u);
-              await removeParticipantFromTrip(trip.id, user.id);
+              const updatedTrip = {
+                ...trip,
+                participantUsernames: trip.participantUsernames.filter(username => username !== u)
+              };
+              await updateTrip(trip.id, updatedTrip);
               onReload();
             } catch (err) {
               alert("Failed to remove buddy: " + err.message);
