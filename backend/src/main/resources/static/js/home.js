@@ -1,14 +1,16 @@
-//=============================================
+// =============================================
 // IMPORTS
-//=============================================
-
+// =============================================
 import { createElement } from './createElement.js';
-import { searchPointsOfInterest, getWeather } from './api.js';
+import {
+  searchLocation,
+  searchPointsOfInterest,
+  getWeather
+} from './api.js';
 import {
   createMap,
   setMapMarker,
   clearMapMarkers,
-  fitMapToMarkers,
   addPoiFilterPanel
 } from './map.js';
 import {
@@ -18,98 +20,118 @@ import {
   renderDaily
 } from './weather.js';
 
-//=============================================
+// =============================================
 // HERO SECTION
-//=============================================
-
+// =============================================
+/**
+ * Creates the hero section with heading, subtitle, and search form.
+ */
 function createHeroSection(onSearch) {
-  const heading     = createElement('h1', { className: 'text-h1', textContent: 'Travel Buddy' });
-  const lead        = createElement('p',  { className: 'text-highlight', textContent: 'Find your next adventure:' });
-  const searchInput = createElement('input', {
+  const heading = createElement('h1', {
+    className: 'text-h1',
+    textContent: 'Travel Buddy',
+    id: 'hero-heading'
+  });
+
+  const subtitle = createElement('p', {
+    className: 'text-highlight',
+    textContent: 'Find your next adventure:'
+  });
+
+  const label = createElement('label', {
+    htmlFor: 'citySearchInput',
+    className: 'sr-only'
+  }, 'Search for a city');
+
+  const cityInput = createElement('input', {
+    id: 'citySearchInput',
     type: 'text',
     className: 'form-control',
-    placeholder: 'Search for cities...',
-    id: 'citySearchInput'
+    placeholder: 'Enter city name...',
+    'aria-label': 'City name'
   });
+
   const searchButton = createElement('button', {
     className: 'btn btn-primary',
     type: 'submit',
-    textContent: 'Search'
+    textContent: 'Search',
+    'aria-label': 'Search city'
   });
-  const inputGroup = createElement('div', { className: 'input-group' }, searchInput, searchButton);
-  const form       = createElement('form', {}, inputGroup);
+
+  const inputGroup = createElement('div', { className: 'input-group' }, label, cityInput, searchButton);
+  const form = createElement('form', { role: 'search' }, inputGroup);
   form.addEventListener('submit', onSearch);
 
-  const formWrapper = createElement('div', { className: 'formWrapper' }, form);
-  const heroContent = createElement('div', { className: 'heroContent' }, heading, lead, formWrapper);
-  return createElement('section', { id: 'hero-section' }, heroContent);
+  const wrapper = createElement('div', { className: 'formWrapper' }, form);
+  const content = createElement('div', { className: 'heroContent' }, heading, subtitle, wrapper);
+  return createElement('section', { id: 'hero-section', 'aria-labelledby': 'hero-heading' }, content);
 }
 
-//=============================================
+// =============================================
 // MAP + SIDEBAR WITH TABS
-//=============================================
-
+// =============================================
+/**
+ * Builds the map container and sidebar with tab panels.
+ */
 function createMapContainer() {
-  const wrapper   = createElement('section', { id: 'map-container' });
-  const mapDiv    = createElement('div',     { id: 'map' });
-  const sidePanel = createElement('div',     { id: 'map-sidebar' });
-
-
-  const navTabs  = createElement('ul', {
-    className: 'nav nav-tabs justify-content-center',
-    role: 'tablist'
-  });
-  const tabPanes = [];
+  const section = createElement('section', { id: 'map-container', 'aria-label': 'Map and weather details' });
+  const mapDiv = createElement('div', { id: 'map', 'aria-label': 'Interactive map' });
+  const sidebar = createElement('div', { id: 'map-sidebar' });
 
   const tabs = [
-    { label: 'Aktuell',   id: 'current-tab', target: 'current',  active: true  },
-    { label: 'Stündlich', id: 'hourly-tab',  target: 'hourly',  active: false },
-    { label: 'Täglich',   id: 'daily-tab',   target: 'daily',   active: false }
+    { label: 'Current', id: 'current-tab', target: 'current', active: true },
+    { label: 'Hourly', id: 'hourly-tab', target: 'hourly', active: false },
+    { label: 'Daily', id: 'daily-tab', target: 'daily', active: false }
   ];
 
-  tabs.forEach(tab => {
-    const li  = createElement('li', { className: 'nav-item', role: 'presentation' });
+  const navTabs = createElement('ul', { className: 'nav nav-tabs justify-content-center', role: 'tablist' });
+  const tabPanes = [];
+
+  tabs.forEach(({ label, id, target, active }) => {
+    const li = createElement('li', { className: 'nav-item', role: 'presentation' });
     const btn = createElement('button', {
-      className: `nav-link${tab.active ? ' active' : ''}`,
-      id: tab.id,
+      className: `nav-link${active ? ' active' : ''}`,
+      id,
       type: 'button',
       role: 'tab',
-      textContent: tab.label
+      'aria-controls': target,
+      'aria-selected': active.toString(),
+      textContent: label
     });
     li.append(btn);
     navTabs.append(li);
 
-    // Pane erstellen und Platzhalter-Text setzen
     const pane = createElement('div', {
-      className: `tab-pane fade${tab.active ? ' show active' : ''}`,
-      id: tab.target,
+      className: `tab-pane fade${active ? ' show active' : ''}`,
+      id: target,
       role: 'tabpanel',
-      'aria-labelledby': tab.id
+      'aria-labelledby': id
     });
-    pane.append(
-      createElement('p', { className: 'text-center text-muted p-3' },
-        'Bitte suche zunächst eine Stadt, um Wetterdaten anzuzeigen.'
-      )
-    );
+    pane.append(createElement('p', { className: 'text-center text-muted p-3', textContent: 'Please search for a city to display weather data.' }));
     tabPanes.push(pane);
 
     btn.addEventListener('click', () => {
-      tabs.forEach(t => document.getElementById(t.id).classList.remove('active'));
-      tabPanes.forEach(p => p.classList.remove('show', 'active'));
+      tabs.forEach(t => {
+        document.getElementById(t.id).classList.remove('active');
+        document.getElementById(t.target).classList.remove('show', 'active');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       pane.classList.add('show', 'active');
     });
   });
 
-  const tabContent = createElement('div', { className: 'tab-content' }, ...tabPanes);
-  sidePanel.append(navTabs, tabContent);
-  wrapper.append(mapDiv, sidePanel);
-  return wrapper;
+  sidebar.append(navTabs, createElement('div', { className: 'tab-content' }, ...tabPanes));
+  section.append(mapDiv, sidebar);
+  return section;
 }
 
-//=============================================
+// =============================================
 // MAIN ENTRY POINT
-//=============================================
+// =============================================
+/**
+ * Loads the home view, initializes map and event handlers.
+ */
 export async function loadHome() {
   const app = document.getElementById('app');
   if (!app) {
@@ -119,51 +141,48 @@ export async function loadHome() {
   app.replaceChildren();
   app.className = '';
 
-  const heroSection  = createHeroSection(onSearch);
+  const hero = createHeroSection(onSearch);
   const mapContainer = createMapContainer();
-  app.append(heroSection, mapContainer);
+  app.append(hero, mapContainer);
 
   const map = createMap('map', [20, 0], 2);
   setTimeout(() => map.invalidateSize(), 0);
   window.addEventListener('resize', () => map.invalidateSize());
 
-  let cityMarker    = null;
-  let poiMarkers    = [];
+  let cityMarker = null;
+  let poiMarkers = [];
   let currentCoords = null;
-  let currentTypes  = [];
+  let currentTypes = [];
   let currentRadius = 1000;
-
   let hourlyIndex = 0;
-  let dailyIndex  = 0;
+  let dailyIndex = 0;
 
   addPoiFilterPanel(map, (types, radius) => {
-    currentTypes  = types;
+    currentTypes = types;
     currentRadius = radius;
     if (currentCoords) {
       loadPois(currentCoords.lat, currentCoords.lon, currentTypes, currentRadius);
     }
   });
 
-  //=============================================
-  // EVENT HANDLER: SEARCH
-  //=============================================
+  /**
+   * Event handler for city search form submission.
+   */
   async function onSearch(e) {
     e.preventDefault();
     const query = document.getElementById('citySearchInput').value.trim();
     if (!query) {
-      return alert('Bitte Stadtnamen eingeben.');
+      return alert('Please enter a city name.');
     }
     try {
-      const res       = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`);
-      const locations = await res.json();
+      const locations = await searchLocation(query);
       if (!locations.length) {
-        return alert(`Keine Treffer für "${query}".`);
+        return alert(`No results for "${query}".`);
       }
-
-      const loc       = locations[0];
-      currentCoords   = { lat: loc.latitude, lon: loc.longitude };
+      const loc = locations[0];
+      currentCoords = { lat: loc.latitude, lon: loc.longitude };
       map.setView([loc.latitude, loc.longitude], 13);
-      cityMarker      = setMapMarker(map, loc.latitude, loc.longitude, loc.displayName, cityMarker, 'default');
+      cityMarker = setMapMarker(map, loc.latitude, loc.longitude, loc.displayName, cityMarker, 'default');
 
       await loadPois(loc.latitude, loc.longitude, currentTypes, currentRadius);
 
@@ -173,28 +192,26 @@ export async function loadHome() {
       document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (err) {
       console.error(err);
-      alert('Fehler: ' + err.message);
+      alert('Error: ' + err.message);
     }
   }
 
-  //=============================================
-  // POI LADEN
-  //=============================================
+  /**
+   * Loads points of interest via API and places markers.
+   */
   async function loadPois(lat, lon, types, radius) {
     poiMarkers = clearMapMarkers(map, poiMarkers);
-    if (!types || !types.length) return;
-
+    if (!types.length) return;
     try {
       const pois = await searchPointsOfInterest({ latitude: lat, longitude: lon, radius, types });
-      if (!pois || !pois.length) return;
-
+      if (!pois.length) return;
       pois.forEach(poi => {
-        const type  = (poi.type || 'default').toLowerCase();
-        if (!types.includes(type)) return;
-        const popup = `<strong>${poi.name}</strong><br>Type: ${poi.type}`
+        const typeKey = (poi.type || 'default').toLowerCase();
+        if (!types.includes(typeKey)) return;
+        const popup = `<strong>${poi.name}</strong><br>Type: ${poi.type}` 
                     + (poi.website ? `<br><a href="${poi.website}" target="_blank">Website</a>` : '')
                     + (poi.phone   ? `<br>Phone: ${poi.phone}` : '');
-        const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, type);
+        const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, typeKey);
         poiMarkers.push(marker);
       });
     } catch (e) {
@@ -202,19 +219,14 @@ export async function loadHome() {
     }
   }
 
-  //=============================================
-  // WEATHER RENDERING
-  //=============================================
+  /**
+   * Renders weather data into current, hourly, and daily tabs.
+   */
   function renderWeather(data) {
-    dailyIndex  = 0;
+    dailyIndex = 0;
     hourlyIndex = calculateInitialHourlyIndex(data.hourlyWeatherData);
-
-    const currentContainer = document.getElementById('current');
-    const hourlyContainer  = document.getElementById('hourly');
-    const dailyContainer   = document.getElementById('daily');
-
-    renderCurrent(data.currentWeather,   currentContainer);
-    renderHourly(data.hourlyWeatherData, hourlyIndex,  hourlyContainer);
-    renderDaily(data.dailyWeatherData,   dailyIndex,   dailyContainer);
+    renderCurrent(data.currentWeather, document.getElementById('current'));
+    renderHourly(data.hourlyWeatherData, hourlyIndex, document.getElementById('hourly'));
+    renderDaily(data.dailyWeatherData, dailyIndex, document.getElementById('daily'));
   }
 }
