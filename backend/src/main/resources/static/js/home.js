@@ -1,6 +1,7 @@
 //=============================================
 // IMPORTS
 //=============================================
+
 import { createElement } from './createElement.js';
 import { searchPointsOfInterest, getWeather } from './api.js';
 import {
@@ -20,9 +21,10 @@ import {
 //=============================================
 // HERO SECTION
 //=============================================
+
 function createHeroSection(onSearch) {
   const heading     = createElement('h1', { className: 'text-h1', textContent: 'Travel Buddy' });
-  const lead        = createElement('p',  { className: 'text-highlight', textContent: 'Find your next adventure' });
+  const lead        = createElement('p',  { className: 'text-highlight', textContent: 'Find your next adventure:' });
   const searchInput = createElement('input', {
     type: 'text',
     className: 'form-control',
@@ -46,12 +48,13 @@ function createHeroSection(onSearch) {
 //=============================================
 // MAP + SIDEBAR WITH TABS
 //=============================================
+
 function createMapContainer() {
   const wrapper   = createElement('section', { id: 'map-container' });
   const mapDiv    = createElement('div',     { id: 'map' });
   const sidePanel = createElement('div',     { id: 'map-sidebar' });
 
-  // Nav-Tabs zentriert
+
   const navTabs  = createElement('ul', {
     className: 'nav nav-tabs justify-content-center',
     role: 'tablist'

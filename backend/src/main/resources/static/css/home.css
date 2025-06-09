@@ -1,19 +1,18 @@
 #hero-section {
-    background-image: url('/images/home-background-plane.jpg');
+    background-image: url('/images/hero4.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    min-height: 60vh;
+    min-height: 75vh;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     position: relative;
-    color: white;
 }
 
 .formWrapper {
-    background: rgba(255, 255, 255, 0.90);
+    background: var(--color-gradient-medium);
     border-radius: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 2rem;
@@ -36,11 +35,11 @@
 #map-container {
   display: flex;
   flex-direction: row;
-  gap: 2rem;
+  gap: 4rem;
   justify-content: space-between;
   align-items: flex-start;
-  margin: 5vh auto;
-  width: 95%;
+  margin: 7vh auto;
+  width: 90%;
   max-width: 180vh;
 }
 
@@ -55,11 +54,26 @@
 
 #map-sidebar {
   flex: 1;
-  background-color: #f8f9fa;
+  background: var(--color-gradient-medium);
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   width: 100%;
+}
+
+#map-sidebar .nav-tabs .nav-link {
+  color: var(--color-light);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+#map-sidebar .nav-tabs .nav-link.active {
+  color: var(--color-light);
+  background-color: var(--color-primary);
+}
+
+#map-sidebar .nav-tabs .nav-link:hover {
+  color: var(--color-light);
 }
 
 /* Stack vertically on small screens */

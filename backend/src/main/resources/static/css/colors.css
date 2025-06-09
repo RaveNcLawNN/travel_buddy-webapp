@@ -1,0 +1,15 @@
+:root {
+  /* Brand colors */
+  --color-primary:    #FF8633;
+  --color-secondary:  #00334D;
+  --color-accent-1:   #00334D;
+  --color-accent-2:   #ECF3F9;
+  --color-bg-light: #ECF3F9;
+  --color-light: #FFFFFF;
+
+
+  /* Gradients */
+  --color-gradient-light: linear-gradient(135deg, #60B5FF, #AFDDFF);
+  --color-gradient-medium: linear-gradient(135deg, #60B5FF, #AFDDFF);
+  --color-gradient-dark: linear-gradient(135deg, #021522, #00334D);
+}

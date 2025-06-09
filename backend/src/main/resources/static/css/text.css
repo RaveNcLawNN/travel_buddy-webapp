@@ -1,10 +1,11 @@
 /*CSS Regeln, die für Texte global relevant sind, z.B. für HLs, fließenden Text, etc.*/
 
 .text-h1 {
-  font-size: 4rem;
-  font-weight: 700;
+  font-size: 5rem;
+  font-weight: 900;
   margin-bottom: var(--tb-spacing);
-  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.25);
+  color: var(--color-primary);
 }
 
 .text-h2 {
@@ -23,10 +24,11 @@
 }
 
 .text-highlight {
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 2rem;
+  font-weight: 700;
   margin-bottom: var(--tb-spacing);
-  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.25);
+  color: var(--color-light);
 }
 
 .text-paragraph {
@@ -45,6 +47,6 @@
     text-decoration: underline;
 }
 
-.nav-item {
-    font-size: 1.1rem;
+nav.navbar .nav-item {
+    font-size: 1.3rem;
 }

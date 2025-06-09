@@ -18,7 +18,7 @@ export function initNavigationBar() {
 
     // <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     const nav = document.createElement('nav');
-    nav.className = 'navbar navbar-expand-lg navbar-dark bg-dark';
+    nav.className = 'navbar navbar-expand-lg navbar-dark';
 
     // <div class="container-fluid">
     const container = document.createElement('div');
@@ -26,13 +26,14 @@ export function initNavigationBar() {
 
     // Link: TravelBuddy (führt zur Landing Page)
     const travelbuddy = document.createElement('a');
-    travelbuddy.className = 'navbar-brand ms-4';
+    travelbuddy.className = 'navbar-brand ms-5';
     travelbuddy.href = '#home';
     
     const logo = document.createElement('img');
-    logo.src = '/images/logo.png'
+    logo.src = '/images/logo-white.png'
     logo.alt = 'TravelBuddy Logo';
-    logo.style.height = '50px';
+    logo.style.height = '60px';
+    logo.style.width  = 'auto';
     logo.style.objectFit = 'contain';
 
     travelbuddy.appendChild(logo);
@@ -74,7 +75,7 @@ export function initNavigationBar() {
     // Erstellung von den einzelnen Navigationspunkten
     navItems.forEach(item => {
         const li = document.createElement('li');
-        li.className = 'nav-item';
+        li.className = 'nav-item ms-2';
 
         const a = document.createElement('a');
         a.className = 'nav-link';
