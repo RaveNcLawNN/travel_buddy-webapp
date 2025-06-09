@@ -4,7 +4,7 @@
 
 import { createElement } from "./createElement.js";
 import { openAddLocationForm, openEditLocationForm } from "./locationModal.js";
-import { openEditTripForm } from "./tripModal.js";
+import { openEditTripForm, openBuddiesModal } from "./tripModal.js";
 import { getCurrentUser } from "./auth.js";
 import { addPoiFilterPanel, setMapMarker, clearMapMarkers } from "./map.js";
 import {getTripById, deleteTrip, updateTrip, getBuddiesForUser, getLocationsByTrip, createLocation, updateLocation, deleteLocation, searchPointsOfInterest } from "./api.js";
@@ -59,18 +59,74 @@ export async function loadTripDetail(id) {
 
   // Buddies for this trip (all participants)
   const buddies = trip.participantUsernames || [];
+  const organizerUsername = trip.organizerUsername;
   const buddiesSection = createElement("div", { className: "mb-3" },
-    createElement("label", { className: "form-label" }, "Buddies for this trip:"),
+    createElement("label", { className: "form-label" }, "Your Buddies for this trip:"),
     buddies.length
-      ? createElement("div", {}, ...buddies.map(u => createElement("span", { 
-          className: `badge ${u === currentUser?.username ? 'bg-danger' : 'bg-info'} text-white me-1`,
-          title: u === trip.organizerUsername ? "Trip Organizer" : ""
-        }, u === currentUser?.username ? `${u} (You)` : u)))
+      ? createElement("div", {}, ...buddies.map(u => {
+          const isOrganizer = u === organizerUsername;
+          const isCurrentUser = u === currentUser?.username;
+          const badge = createElement("span", {
+            className: `badge ${isCurrentUser ? 'bg-danger' : 'bg-info'} text-white me-1 position-relative`,
+            title: isOrganizer ? "Trip Organizer" : ""
+          }, isCurrentUser ? `${u} (You)` : u);
+          // Add remove 'x' button if not organizer or current user
+          if (!isOrganizer && !isCurrentUser) {
+            const removeBtn = createElement("button", {
+              type: "button",
+              className: "buddy-remove-btn position-absolute",
+              style: `
+                top: -10px;
+                right: -4px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background:rgba(196, 39, 39, 0.86);
+                color: #fff;
+                border: none;
+                font-size: 1.1em;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                cursor: pointer;
+                z-index: 2;`,
+              title: "Remove from trip",
+              onclick: async (e) => {
+                e.stopPropagation();
+                if (!confirm(`Remove ${u} from this trip?`)) return;
+                try {
+                  // Find userId for username (fetch from backend)
+                  const res = await fetch(`/api/users/${u}`);
+                  if (!res.ok) throw new Error('User not found');
+                  const user = await res.json();
+                  await fetch(`/api/trips/${trip.id}/participants/${user.id}`, { method: 'DELETE' });
+                  await loadTripDetail(trip.id);
+                } catch (err) {
+                  alert('Failed to remove buddy: ' + err.message);
+                }
+              }
+            }, '×');
+            badge.appendChild(removeBtn);
+          }
+          return badge;
+        }))
       : createElement("span", { className: "text-muted" }, "No buddies added yet.")
   );
   container.appendChild(buddiesSection);
 
   // Header: Title, Date, Status, Delete-Btn, Edit-Btn
+  const addBuddiesBtn = createElement("button", {
+    className: "btn btn-success me-2 d-flex align-items-center justify-content-center",
+    id: "addBuddiesBtn",
+    style: "height: 38px; min-width: 140px;"
+  }, createElement('span', {className: 'me-1'}, '+'), 'Add Buddies...');
+
+  addBuddiesBtn.onclick = () => {
+    openBuddiesModal(trip, () => loadTripDetail(trip.id));
+  };
+
   const header = createElement("div", { className: "d-flex justify-content-between align-items-center mb-4" },
     createElement("div", { id: "tripDetailsContainer" },
       createElement("h2", { className: "mb-1", id: "tripTitleDisplay" }, trip.title),
@@ -78,7 +134,8 @@ export async function loadTripDetail(id) {
         createElement("br"), `From: ${trip.startDate} - To: ${trip.endDate}`,
         createElement("br"), `Status: ${trip.status}`)
     ),
-    createElement("div", { id: "editDeleteBtn" },
+    createElement("div", { id: "editDeleteBtn", className: "d-flex align-items-center" },
+      addBuddiesBtn,
       createElement("button", { className: "btn btn-warning me-2", id: "editTripBtn" }, "Edit Trip"),
       createElement("button", { className: "btn btn-danger", id: "deleteTripBtn" }, "Delete Trip")
     )

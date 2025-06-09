@@ -54,107 +54,6 @@ export function openEditTripForm(trip, onSubmitCallback) {
 
     const errorDiv = createElement("div", { className: "text-danger", style: "display:none;" });
 
-    // Buddies Multi-Select Section
-    const buddiesSection = createElement("div", { className: "mb-3" });
-    const buddiesLabel = createElement("label", { className: "form-label" }, "Your Buddies for this trip: ");
-    const buddiesList = createElement("div", { className: "mb-2", id: "tripBuddiesList" });
-    const addBuddiesBtn = createElement("button", { type: "button", className: "btn btn-outline-primary btn-sm mb-2" }, "Add Buddies...");
-    buddiesSection.append(buddiesLabel, buddiesList, addBuddiesBtn);
-
-    // State for selected buddies
-    let selectedBuddies = Array.isArray(trip.participantUsernames) ? [...trip.participantUsernames] : [];
-
-    // Helper to render selected buddies
-    function renderSelectedBuddies() {
-        const currentUser = getCurrentUser();
-        const filteredBuddies = selectedBuddies.filter(u => !currentUser || u !== currentUser.username);
-        buddiesList.innerHTML = filteredBuddies.length
-            ? filteredBuddies.map(u => `<span class='badge bg-info text-dark me-1'>${u}</span>`).join(' ')
-            : '<span class="text-muted">No buddies added yet.</span>';
-    }
-    renderSelectedBuddies();
-
-    // Add Buddies Multi-Select Modal
-    addBuddiesBtn.onclick = async () => {
-        const currentUser = getCurrentUser();
-        if (!currentUser) return;
-        const buddies = await getBuddiesForUser(currentUser.username);
-        
-        // Create Bootstrap modal for buddy selection
-        const buddyModal = createElement("div", { 
-            className: "modal fade", 
-            id: "buddySelectModal",
-            tabIndex: -1
-        });
-        const buddyDialog = createElement("div", { className: "modal-dialog" });
-        const buddyContent = createElement("div", { className: "modal-content" });
-        
-        const buddyHeader = createElement("div", { className: "modal-header" },
-            createElement("h5", { className: "modal-title" }, "Select Buddies"),
-            createElement("button", { 
-                type: "button", 
-                className: "btn-close", 
-                "data-bs-dismiss": "modal",
-                "aria-label": "Close" 
-            })
-        );
-        
-        const buddyBody = createElement("div", { className: "modal-body" });
-        const buddyForm = createElement("form", { className: "d-flex flex-column gap-2" });
-        
-        // List of checkboxes
-        buddies.forEach(buddy => {
-            const checkbox = createElement("input", {
-                type: "checkbox",
-                className: "form-check-input",
-                id: `buddy_${buddy.username}`,
-                value: buddy.username,
-                checked: selectedBuddies.includes(buddy.username)
-            });
-            const label = createElement("label", { className: "form-check-label ms-2", for: `buddy_${buddy.username}` }, buddy.username);
-            const group = createElement("div", { className: "form-check" }, checkbox, label);
-            buddyForm.appendChild(group);
-        });
-        
-        buddyBody.appendChild(buddyForm);
-        
-        const buddyFooter = createElement("div", { className: "modal-footer" },
-            createElement("button", { 
-                type: "button", 
-                className: "btn btn-secondary", 
-                "data-bs-dismiss": "modal"
-            }, "Cancel"),
-            createElement("button", { 
-                type: "button", 
-                className: "btn btn-success", 
-                id: "confirmBuddySelectBtn"
-            }, "Confirm")
-        );
-        
-        buddyContent.append(buddyHeader, buddyBody, buddyFooter);
-        buddyDialog.appendChild(buddyContent);
-        buddyModal.appendChild(buddyDialog);
-        document.body.appendChild(buddyModal);
-        
-        // Initialize Bootstrap modal
-        const bsBuddyModal = new bootstrap.Modal(buddyModal);
-        bsBuddyModal.show();
-        
-        // Event handlers
-        document.getElementById("confirmBuddySelectBtn").onclick = () => {
-            // Collect selected buddies
-            selectedBuddies = Array.from(buddyForm.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
-            renderSelectedBuddies();
-            bsBuddyModal.hide();
-            buddyModal.remove();
-        };
-        
-        // Clean up when modal is hidden
-        buddyModal.addEventListener('hidden.bs.modal', () => {
-            buddyModal.remove();
-        });
-    };
-
     // Footer
     const footer = createElement("div", { className: "modal-footer" },
         createElement("button", { 
@@ -175,7 +74,6 @@ export function openEditTripForm(trip, onSubmitCallback) {
         createFormGroup("Start Date", startDate),
         createFormGroup("End Date", endDate),
         createFormGroup("Status", status),
-        buddiesSection,
         errorDiv,
         footer
     );
@@ -207,7 +105,6 @@ export function openEditTripForm(trip, onSubmitCallback) {
             startDate: startDate.value,
             endDate: endDate.value,
             status: status.value,
-            participantUsernames: [...(trip.participantUsernames || []), ...selectedBuddies],
             locations: (trip.locations || []).map(loc => ({ ...loc, tripId: trip.id }))
         };
 
@@ -261,6 +158,113 @@ export function openEditTripForm(trip, onSubmitCallback) {
     // Clean up when modal is hidden
     modal.addEventListener('hidden.bs.modal', () => {
         modal.remove();
+        document.body.style.overflow = "";
+    });
+}
+
+export async function openBuddiesModal(trip, onSubmitCallback) {
+    document.body.style.overflow = "hidden";
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    const buddies = await getBuddiesForUser(currentUser.username);
+    let selectedBuddies = Array.isArray(trip.participantUsernames) ? [...trip.participantUsernames] : [];
+
+    // Create Bootstrap modal for buddy selection
+    const buddyModal = createElement("div", {
+        className: "modal fade",
+        id: "buddySelectModal",
+        tabIndex: -1
+    });
+    const buddyDialog = createElement("div", { className: "modal-dialog" });
+    const buddyContent = createElement("div", { className: "modal-content" });
+
+    const buddyHeader = createElement("div", { className: "modal-header" },
+        createElement("h5", { className: "modal-title" }, "Select Buddies"),
+        createElement("button", {
+            type: "button",
+            className: "btn-close",
+            "data-bs-dismiss": "modal",
+            "aria-label": "Close"
+        })
+    );
+
+    const buddyBody = createElement("div", { className: "modal-body" });
+    const buddyForm = createElement("form", { className: "d-flex flex-column gap-2" });
+
+    // List of checkboxes
+    buddies.forEach(buddy => {
+        const checkbox = createElement("input", {
+            type: "checkbox",
+            className: "form-check-input",
+            id: `buddy_${buddy.username}`,
+            value: buddy.username,
+            checked: selectedBuddies.includes(buddy.username)
+        });
+        const label = createElement("label", { className: "form-check-label ms-2", for: `buddy_${buddy.username}` }, buddy.username);
+        const group = createElement("div", { className: "form-check" }, checkbox, label);
+        buddyForm.appendChild(group);
+    });
+
+    buddyBody.appendChild(buddyForm);
+
+    const buddyFooter = createElement("div", { className: "modal-footer" },
+        createElement("button", {
+            type: "button",
+            className: "btn btn-secondary",
+            "data-bs-dismiss": "modal"
+        }, "Cancel"),
+        createElement("button", {
+            type: "button",
+            className: "btn btn-success",
+            id: "confirmBuddySelectBtn"
+        }, "Confirm")
+    );
+
+    buddyContent.append(buddyHeader, buddyBody, buddyFooter);
+    buddyDialog.appendChild(buddyContent);
+    buddyModal.appendChild(buddyDialog);
+    document.body.appendChild(buddyModal);
+
+    // Initialize Bootstrap modal
+    const bsBuddyModal = new bootstrap.Modal(buddyModal);
+    bsBuddyModal.show();
+
+    document.getElementById("confirmBuddySelectBtn").onclick = async () => {
+        // Collect selected buddies (replace, not add)
+        selectedBuddies = Array.from(buddyForm.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
+        // Always include the organizer
+        if (!selectedBuddies.includes(trip.organizerUsername)) {
+            selectedBuddies.push(trip.organizerUsername);
+        }
+        // Update the trip's participants
+        const updatedTrip = {
+            ...trip,
+            participantUsernames: selectedBuddies
+        };
+
+        try {
+            const response = await fetch(`/api/trips/${trip.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedTrip)
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update trip');
+            }
+            if (typeof onSubmitCallback === "function") {
+                onSubmitCallback();
+            }
+        } catch (err) {
+            alert("Failed to update buddies: " + err.message);
+        }
+        bsBuddyModal.hide();
+        buddyModal.remove();
+    };
+
+    buddyModal.addEventListener('hidden.bs.modal', () => {
+        buddyModal.remove();
         document.body.style.overflow = "";
     });
 }
