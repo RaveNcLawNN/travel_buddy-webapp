@@ -21,6 +21,12 @@ footer.navbar {
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
 }
 
+footer .container {
+  height: 100% !important;
+  min-height: auto !important;
+  padding-bottom: 0 !important
+}
+
 nav.navbar {
   min-height: 10vh;
   background-color: var(--color-secondary) !important;
