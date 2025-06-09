@@ -39,7 +39,6 @@
     margin-top: 3vh;
 }
 
-/* === DESCRIPTION GANZ UNTEN ================================= */
 .trip-detail-description {
     grid-column: 1 / -1;
     height: 160px;
@@ -48,7 +47,6 @@
     flex-direction: column;
 }
 
-/* === Responsive: alles untereinander ======================= */
 @media(max-width:992px) {
     .trip-detail-layout {
         grid-template-columns: 1fr;
