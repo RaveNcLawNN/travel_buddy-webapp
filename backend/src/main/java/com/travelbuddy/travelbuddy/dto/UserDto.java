@@ -38,4 +38,10 @@ public class UserDto {
     @NotBlank(message = "Password is required")
     @Size(min = 1, message = "Password must be at least 1 character")
     private String password;
+
+    /**
+     * The role of the user (e.g., 'ADMIN', 'USER').
+     */
+    @NotBlank(message = "Role is required")
+    private String role;
 } 

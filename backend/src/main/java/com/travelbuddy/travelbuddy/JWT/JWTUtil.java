@@ -15,13 +15,15 @@ public class JWTUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public String generateToken(User user) {
+        // Create a JWT token with the user's details
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("id", user.getId())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
-                .signWith(key)
-                .compact();
+                .setSubject(user.getUsername()) // Set the username as the subject
+                .claim("id", user.getId()) // Add the user's ID as a claim
+                .claim("role", user.getRole()) // Add the user's role as a claim
+                .setIssuedAt(new Date()) // Set the token's issue date
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // Set the token's expiration (1 hour)
+                .signWith(key) // Sign the token with the secret key
+                .compact(); // Build the token
     }
 
     public String validateToken(String token) {

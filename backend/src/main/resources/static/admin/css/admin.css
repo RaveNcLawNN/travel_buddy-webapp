@@ -1,0 +1,35 @@
+body {
+    background: #f7f7fa;
+}
+
+h3 {
+    margin-top: 20px;
+    color: #333;
+}
+
+.user-item, .trip-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+}
+
+button {
+    margin-left: 10px;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 3px;
+    color: #fff;
+    background: #007bff;
+    transition: background 0.2s;
+}
+button.delete {
+    background: #ff6600;
+}
+button:hover {
+    opacity: 0.85;
+} 

@@ -47,6 +47,17 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         System.out.println("Initializing test data...");
         
+        // Ensure admin user exists
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = User.builder()
+                .username("admin")
+                .email("admin@example.com")
+                .password(passwordEncoder.encode("123"))
+                .role("ADMIN")
+                .build();
+            userRepository.save(admin);
+        }
+        
         // Create test users if they don't exist
         createUserIfNotExists("david@example.com", "david", "123");
         createUserIfNotExists("emanuel@example.com", "emanuel", "123");

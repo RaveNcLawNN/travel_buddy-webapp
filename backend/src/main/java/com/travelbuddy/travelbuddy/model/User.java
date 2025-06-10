@@ -43,5 +43,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    /**
+     * The role of the user (e.g., 'ADMIN', 'USER').
+     */
+    @Column(nullable = false)
+    private String role;
+
     // Future: Add relationships to trips, friends, etc.
 } 

@@ -42,7 +42,26 @@ public class UserService {
      */
     public User registerUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Ensure role is set
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("USER"); // Default role
+        }
         return userRepository.save(user);
+    }
+
+    /**
+     * Initializes the admin user if it doesn't exist.
+     */
+    public void initializeAdminUser() {
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = User.builder()
+                    .username("admin")
+                    .email("admin@example.com")
+                    .password(passwordEncoder.encode("123"))
+                    .role("ADMIN")
+                    .build();
+            userRepository.save(admin);
+        }
     }
 
     /**
@@ -161,5 +180,9 @@ public class UserService {
         }
 
         buddyRepository.delete(buddy);
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 } 

@@ -72,6 +72,19 @@ export async function login(username, password) {
         }
 
         setToken(token);
+
+        // Decode the JWT and redirect based on role
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role === 'ADMIN') {
+                window.location.href = '/admin/html/index.html';
+            } else {
+                window.location.href = '/index.html';
+            }
+        } catch (e) {
+            console.error('Error decoding JWT for redirection:', e);
+            window.location.href = '/index.html';
+        }
         return true;
     } catch (error) {
         console.error('Login error:', error);

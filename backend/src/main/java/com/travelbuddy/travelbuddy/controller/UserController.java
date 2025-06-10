@@ -83,6 +83,8 @@ public class UserController {
         }
         // Map DTO to User entity
         User user = userMapper.toEntity(userDto);
+        // Set role from DTO
+        user.setRole(userDto.getRole());
         User savedUser = userService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
@@ -333,5 +335,16 @@ public class UserController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping
+    public List<UserDto> getAllUsers() {
+        return userService.findAll().stream()
+            .map(user -> UserDto.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build())
+            .toList();
     }
 } 

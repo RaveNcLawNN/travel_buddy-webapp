@@ -43,7 +43,8 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/h2-console/**", "/api/users/login", "/api/users/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().permitAll() //all other requests need to be authenticated using JWT.
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin-only endpoints
+                .anyRequest().permitAll() // Temporarily permit all requests for accessibility
             )
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())) // Required for H2 console
             .csrf(csrf -> csrf
