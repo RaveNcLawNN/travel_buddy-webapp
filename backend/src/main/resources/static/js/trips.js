@@ -163,43 +163,68 @@ export async function loadTrips(page = 1) {
     const mapDiv = createElement('div', { id: 'createTripMap', style: 'height: 200px; width: 100%; margin-bottom: 1rem; display: none;' });
     body.appendChild(mapDiv);
     let createTripMap, createTripMarker, selectedLat, selectedLon;
+    let debounceTimeout;
 
-    // Listen for destination input changes
-    setTimeout(() => {
-      const destinationInput = document.getElementById('tripDestination');
-      let debounceTimeout;
-      destinationInput.addEventListener('input', (e) => {
-        clearTimeout(debounceTimeout);
-        const query = e.target.value.trim();
-        if (!query) {
-          mapDiv.style.display = 'none';
-          return;
-        }
-        debounceTimeout = setTimeout(async () => {
-          try {
-            const locations = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`).then(res => res.json());
-            if (locations.length) {
-              const loc = locations[0];
-              selectedLat = loc.latitude;
-              selectedLon = loc.longitude;
-              mapDiv.style.display = 'block';
-              if (!createTripMap) {
-                createTripMap = L.map('createTripMap').setView([loc.latitude, loc.longitude], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(createTripMap);
-                createTripMarker = L.marker([loc.latitude, loc.longitude]).addTo(createTripMap);
-              } else {
-                createTripMap.setView([loc.latitude, loc.longitude], 13);
-                createTripMarker.setLatLng([loc.latitude, loc.longitude]);
-              }
+    // Add all elements to the modal
+    form.append(titleGroup, descGroup, destGroup);
+    body.appendChild(form);
+    content.append(header, body);
+    dialog.appendChild(content);
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+
+    // Initialize Bootstrap modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+
+    // Now that the modal is in the DOM, we can set up the event listeners
+    const destinationInput = document.getElementById('tripDestination');
+    const inputHandler = (e) => {
+      clearTimeout(debounceTimeout);
+      const query = e.target.value.trim();
+      if (!query) {
+        mapDiv.style.display = 'none';
+        return;
+      }
+      debounceTimeout = setTimeout(async () => {
+        try {
+          const locations = await fetch(`/api/locations/search?query=${encodeURIComponent(query)}`).then(res => res.json());
+          if (locations.length) {
+            const loc = locations[0];
+            selectedLat = loc.latitude;
+            selectedLon = loc.longitude;
+            mapDiv.style.display = 'block';
+            if (!createTripMap) {
+              createTripMap = L.map('createTripMap').setView([loc.latitude, loc.longitude], 13);
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(createTripMap);
+              createTripMarker = L.marker([loc.latitude, loc.longitude]).addTo(createTripMap);
             } else {
-              mapDiv.style.display = 'none';
+              createTripMap.setView([loc.latitude, loc.longitude], 13);
+              createTripMarker.setLatLng([loc.latitude, loc.longitude]);
             }
-          } catch {
+          } else {
             mapDiv.style.display = 'none';
           }
-        }, 500); // 500ms debounce
-      });
-    }, 0);
+        } catch {
+          mapDiv.style.display = 'none';
+        }
+      }, 500); // 500ms debounce
+    };
+
+    destinationInput.addEventListener('input', inputHandler);
+
+    // Clean up when modal is closed
+    modal.addEventListener('hidden.bs.modal', () => {
+      if (createTripMap) {
+        createTripMap.remove();
+        createTripMap = null;
+      }
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+      destinationInput.removeEventListener('input', inputHandler);
+      modal.remove(); // Remove the modal from DOM after it's hidden
+    });
 
     const fromGroup = createElement("div", { className: "mb-3" },
       createElement("label", { for: "tripFrom", className: "form-label" }, "From:"),
@@ -214,21 +239,14 @@ export async function loadTrips(page = 1) {
     const errorDiv = createElement("div", { id: "tripError", className: "text-danger mb-2", style: "display:none;" });
 
     const submitButton = createElement("button", { type: "submit", className: "btn btn-success" }, "Create");
-    form.append(titleGroup, descGroup, destGroup, fromGroup, toGroup, errorDiv, submitButton);
+    form.append(fromGroup, toGroup, errorDiv, submitButton);
 
     const footer = createElement("div", { className: "modal-footer" },
       createElement("button", { type: "button", className: "btn btn-secondary", "data-bs-dismiss": "modal" }, "Cancel")
     );
 
     body.appendChild(form);
-    content.append(header, body, footer);
-    dialog.appendChild(content);
-    modal.appendChild(dialog);
-    document.body.appendChild(modal);
-
-    // Bootstrap modal instance
-    const bsModal = new bootstrap.Modal(modal);
-    bsModal.show();
+    content.append(footer);
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
