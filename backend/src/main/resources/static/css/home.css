@@ -1,36 +1,52 @@
+/*
+HERO SECTION
+*/
+
 #hero-section {
-    background-image: url('/images/hero4.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 75vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
+  background-image: url('/images/hero4.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
 }
+
+/*
+FORM WRAPPER (for search/login/signup etc.)
+*/
 
 .formWrapper {
-    background: var(--color-gradient-medium);
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    max-width: 500px;
-    width: 90%;
-    margin: 1rem auto 0 auto;
+  background: var(--color-gradient-medium);
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  margin: 1rem auto 0 auto;
 }
 
+/*
+SEARCH
+*/
+
 .search-results ul {
-    max-height: 200px;
-    overflow-y: auto;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .search-result-home {
-    padding: 2rem 0;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+  padding: 2rem 0;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
+
+/*
+MAP & WEATHER SECTION
+*/
 
 #map-container {
   display: flex;
@@ -76,20 +92,24 @@
   color: var(--color-light);
 }
 
-/* Stack vertically on small screens */
+/*
+RESPONSIVE DESIGN
+*/
+
 @media (max-width: 992px) {
   #map-container {
     flex-direction: column;
     width: 96%;
   }
 
-  #map, #map-sidebar {
+  #map,
+  #map-sidebar {
     width: 100%;
   }
 }
 
 @media (max-width: 576px) {
-    .display-4 {
-        font-size: 2rem;
-    }
+  .display-4 {
+    font-size: 2rem;
+  }
 }

@@ -1,6 +1,9 @@
-/*CSS Regeln, die layout-technisch global relevant sind, z.B. für Body, Navbar, etc.*/
+/*
+GLOBALLY RELEVANT CSS FOR LAYOUT (BODY; NAVBAR; etc.)
+*/
 
-html, body {
+html,
+body {
   margin: 0;
   background-color: var(--color-bg-light);
 }

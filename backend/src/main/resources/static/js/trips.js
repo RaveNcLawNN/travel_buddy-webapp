@@ -94,7 +94,7 @@ export async function loadTrips(page = 1) {
 
     pageTrips.forEach((trip) => {
       const card = createElement("button", { type: "button", className: "trip-card btn btn-outline-dark w-100 py-5" },
-        createElement("h2", { className: "mb-3" }, trip.title),
+        createElement("h1", { className: "mb-3" }, trip.title),
         createElement("small", {}, `${trip.startDate} - ${trip.endDate}`)
       );
       card.addEventListener("click", () => {
@@ -136,7 +136,7 @@ export async function loadTrips(page = 1) {
 
     // Modal Header
     const header = createElement("div", { className: "modal-header" },
-      createElement("h5", { className: "modal-title" }, "Create New Trip"),
+      createElement("h1", { className: "modal-title" }, "Create New Trip"),
       createElement("button", { type: "button", className: "btn-close", "data-bs-dismiss": "modal", "aria-label": "Close" })
     );
 

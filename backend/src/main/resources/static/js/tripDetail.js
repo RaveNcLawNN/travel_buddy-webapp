@@ -130,15 +130,15 @@ export async function loadTripDetail(id) {
 
   const descriptionPanel = createElement("div", { className: "trip-detail-description" },
     createElement("div", { className: "d-flex justify-content-between align-items-center mb-2" },
-      createElement("label", { htmlFor: "tripDescription", className: "form-label mb-0" }, "Trip Description:"),
+      createElement("label", { htmlFor: "tripDescription", className: "trip-description-label" }, "Trip Description:"),
       createElement("div", { className: "description-actions" },
         createElement("button", { 
-          className: "btn btn-outline-primary btn-sm", 
+          className: "btn-edit-description", 
           id: "editDescriptionBtn",
           style: "display: none;"
         }, "Edit"),
         createElement("button", { 
-          className: "btn btn-primary btn-sm ms-2", 
+          className: "btn-save-description", 
           id: "saveDescriptionBtn",
           style: "display: none;"
         }, "Save")

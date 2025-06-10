@@ -1,4 +1,7 @@
-/* === GRID-GRUNDGERÜST ======================================= */
+/*
+LAYOUT: GRID
+*/
+
 .trip-detail-layout {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(300px, 320px);
@@ -12,10 +15,69 @@
     height: 100%;
 }
 
-/* === GRID-AREAS ============================================= */
+/*
+LAYOUT: APP CONTAINER
+*/
+
+.trip-detail-view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.trip-detail-view .container {
+    height: 100%;
+    min-height: calc(100vh - 100px);
+    padding-bottom: 2rem;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/*
+TYPOGRAPHY
+*/
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.trip-detail-info p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 2rem;
+}
+
+.trip-description-label {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.3rem;
+    display: inline-block;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    border-bottom: 2px solid #000000;
+}
+
+/*
+GRID AREAS
+*/
+
+.trip-detail-map,
+.trip-detail-locations,
+.trip-detail-description {
+    margin-bottom: 3rem;
+}
+
 .trip-detail-info {
     grid-area: info;
-    margin-top: 3vh;
+    margin-top: 5vh;
+    padding: 1rem;
 }
 
 .trip-detail-map {
@@ -25,7 +87,8 @@
     max-height: 600px;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .trip-detail-locations {
@@ -39,8 +102,9 @@
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background: #fafafa;
-    margin-top: 0;
+    background: var(--color-gradient-extraLight);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    margin-top: 5vh;
 }
 
 .trip-detail-description {
@@ -49,37 +113,13 @@
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background: #fafafa;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    background: var(--color-gradient-extraLight);
 }
 
-/* Ensure the container takes full height */
-.trip-detail-view .container {
-    height: 100%;
-    min-height: calc(100vh - 100px);
-    padding-bottom: 2rem;
-    width: 100%;
-    max-width: 1300px;
-    margin: 0 auto;
-    overflow-x: hidden;
-    padding-left: 2rem;
-    padding-right: 2rem;
-}
-
-@media (max-width: 1200px) {
-    .trip-detail-view .container {
-        max-width: 100%;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-}
-
-/* Ensure the app container takes full height */
-.trip-detail-view {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
+/*
+DESCRIPTION FIELDS
+*/
 
 .trip-description-display {
     min-height: 100px;
@@ -95,6 +135,43 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     resize: vertical;
+}
+
+/*
+LOCATION LIST
+*/
+
+#locationsList {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#locationsList .card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#locationsList .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/*
+RESPONSIVE DESIGN
+*/
+
+@media (max-width: 1200px) {
+    .trip-detail-view .container {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 }
 
 @media(max-width:992px) {
@@ -124,47 +201,104 @@
     }
 }
 
-/* Ensure the locations list doesn't expand the container */
-#locationsList {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
+/*
+BUTTON STYLES: BASE
+*/
+
+.btn-edit,
+.btn-edit-location,
+.btn-delete,
+.btn-delete-location,
+.btn-add,
+.btn-add-buddies,
+.btn-edit-description,
+.btn-save-description,
+.btn-back {
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-edit:hover,
+.btn-edit-location:hover,
+.btn-delete:hover,
+.btn-delete-location:hover,
+.btn-add:hover,
+.btn-add-buddies:hover,
+.btn-edit-description:hover,
+.btn-save-description:hover,
+.btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    filter: brightness(0.9);
+
+}
+
+/*
+BUTTON STYLES: VARIANTS
+*/
+
+.btn-add,
+.btn-add-buddies,
+.btn-save-description {
+    padding: 6px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #5cb85c;
+    color: #212529;
 }
 
 .btn-edit,
-.btn-delete,
-.btn-add,
-.btn-add-buddies,
-.btn-edit-location,
-.btn-delete-location,
+.btn-edit-description {
+    padding: 6px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #f0ad4e;
+    color: #212529;
+}
+
+.btn-edit-location {
+    padding: 6px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #f0ad4e;
+    color: #212529;
+}
+
+.btn-delete-location {
+    padding: 6px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #d9534f;
+    color: #212529;
+}
+
+
+.btn-delete {
+    padding: 6px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #d9534f;
+    color: #212529;
+}
+
 .btn-back {
     padding: 6px 12px;
     font-size: .9rem;
     cursor: pointer;
     border-radius: 4px;
     border: 1px solid #333;
-    background: #fff;
-}
-
-.btn-delete,
-.btn-delete-location {
-    border-color: #d9534f;
-    color: #d9534f;
-}
-
-.btn-edit-location {
-    border-color: #0275d8;
-    color: #0275d8;
-}
-
-.btn-add {
-    border-color: #0275d8;
-    color: #0275d8;
-}
-
-.btn-add-buddies {
-    border-color: #138496;
-    color: #138496;
+    background: #949494;
+    color: #212529;
 }
 
 .btn-remove-buddies {
@@ -175,7 +309,7 @@
     height: 16px;
     border: none;
     border-radius: 50%;
-    background: rgba(196, 39, 39, .86);
+    background: #d9534f;
     color: #fff;
     font-size: 1.1em;
     font-weight: bold;
@@ -187,7 +321,10 @@
     z-index: 2;
 }
 
-/* Buddy section inline with text */
+/*
+BUDDY STYLES
+*/
+
 .buddy-section {
     margin-top: 1rem;
     display: flex;
@@ -195,7 +332,6 @@
     gap: 0.5rem;
 }
 
-/* Buddy badge styles */
 .buddy-badge {
     background: #17a2b8;
     color: #fff;
@@ -214,19 +350,14 @@
     font-size: 0.8rem;
 }
 
-/* Ensure buttons are side by side with space */
+/*
+ACTION GROUPS
+*/
+
 .trip-detail-actions {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 0.3rem;
     margin-top: 1rem;
-}
-
-/* Add padding to location cards in the locationsList */
-#locationsList .card {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 1rem;
 }

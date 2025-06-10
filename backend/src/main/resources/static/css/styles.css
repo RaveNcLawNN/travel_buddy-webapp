@@ -1,15 +1,26 @@
-/* Wir importieren die CSS für jeden View in styles.css und importieren dann das ganze in HTML */
+/* 
+IMPORT ALL CSS AND THEN IMPORT STYLES.CSS INTO INDEX.HTML
+*/
 
-/* 1. layout specific */
+/*
+LAYOUT SPECIFIC
+*/
+
 @import 'general.css';
 @import 'text.css';
 @import 'colors.css';
 @import 'bg.css';
 
-/* 2. special css */
+/*
+EXTRA
+*/
+
 @import 'animated-weather.css';
 
-/* 3. view specific */
+/*
+VIEW SPECIFIC
+*/
+
 @import 'home.css';
 @import 'trips.css';
 @import 'trip-detail.css';

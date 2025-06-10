@@ -1,4 +1,6 @@
-/*CSS Regeln, die für Texte global relevant sind, z.B. für HLs, fließenden Text, etc.*/
+/*
+GLOBALLY RELEVANT CSS FOR TEXT
+*/
 
 .text-h1-home {
   font-size: 5rem;
@@ -61,14 +63,14 @@
 }
 
 .nav-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .nav-link.active {
-    font-weight: bold;
-    text-decoration: underline;
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 nav.navbar .nav-item {
-    font-size: 1.3rem;
+  font-size: 1.3rem;
 }
