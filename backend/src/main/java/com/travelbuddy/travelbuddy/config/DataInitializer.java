@@ -137,6 +137,7 @@ public class DataInitializer implements CommandLineRunner {
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
+                .role("USER")
                 .build();
             userRepository.save(user);
         }

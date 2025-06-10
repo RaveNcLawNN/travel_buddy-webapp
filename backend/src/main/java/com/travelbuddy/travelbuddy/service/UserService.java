@@ -42,9 +42,11 @@ public class UserService {
      */
     public User registerUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // Ensure role is set
+        // Ensure role is set and always uppercase
         if (user.getRole() == null || user.getRole().isEmpty()) {
             user.setRole("USER"); // Default role
+        } else {
+            user.setRole(user.getRole().toUpperCase());
         }
         return userRepository.save(user);
     }
@@ -184,5 +186,9 @@ public class UserService {
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 } 

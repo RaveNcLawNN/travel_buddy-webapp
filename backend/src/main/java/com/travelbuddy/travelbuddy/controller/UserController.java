@@ -360,8 +360,8 @@ public class UserController {
         if (newRole == null) {
             return ResponseEntity.badRequest().body("Missing 'role' field");
         }
-        user.setRole(newRole);
-        userService.registerUser(user); // reuses registration logic for saving
+        user.setRole(newRole.toUpperCase());
+        userService.saveUser(user); // Do not re-encode password
         return ResponseEntity.ok().build();
     }
 } 
