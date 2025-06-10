@@ -79,22 +79,25 @@ export async function loadTripDetail(id) {
     createElement("p", { id: "tripInfoDisplay" }, `Destination: ${trip.destination}`,
       createElement("br"), `From: ${trip.startDate} - To: ${trip.endDate}`,
       createElement("br"), `Status: ${trip.status}`
-    ),
-    createElement("div", { style: "margin-top: 1rem;" },
-      createElement("button", { className: "btn-edit", id: "editTripBtn" }, "Edit"),
-      createElement("button", { className: "btn-delete", id: "deleteTripBtn", style: "margin-left: .5rem;" }, "Delete")
     )
   );
   layout.appendChild(infoPanel);
 
+  // Ensure Add Buddies button has click event
+  const addBuddiesBtn = createElement("button", { className: "btn-add-buddies", id: "addBuddiesBtn" }, "+ Add Buddies...");
+  addBuddiesBtn.onclick = () => openBuddiesModal(trip, () => loadTripDetail(trip.id));
+
+  // Wrap buttons in trip-detail-actions for alignment
+  const tripActions = createElement("div", { className: "trip-detail-actions" },
+    createElement("button", { className: "btn-edit", id: "editTripBtn" }, "Edit"),
+    createElement("button", { className: "btn-delete", id: "deleteTripBtn" }, "Delete"),
+    addBuddiesBtn
+  );
+  infoPanel.appendChild(tripActions);
 
   //=============================================
   // BUDDIES SECTION
   //=============================================
-
-  const addBuddiesBtn = createElement("button", { className: "btn-add-buddies", id: "addBuddiesBtn" }, "+ Add Buddies…");
-  addBuddiesBtn.onclick = () => openBuddiesModal(trip, () => loadTripDetail(trip.id));
-  infoPanel.appendChild(addBuddiesBtn);
 
   const buddiesSection = renderBuddiesSection(trip, currentUser, () => loadTripDetail(trip.id));
   infoPanel.appendChild(buddiesSection);
@@ -257,7 +260,10 @@ export async function loadTripDetail(id) {
         createElement("div", { style: "margin-top:.5rem" },
           createElement(
             "button",
-            { className: "btn-edit-location", onclick: () => openEditLocationForm(loc, trip.id, loadAndRenderLocations) },
+            {
+              className: "btn-edit-location",
+              onclick: () => openEditLocationForm(loc, trip.id, loadAndRenderLocations)
+            },
             "Edit"
           ),
           createElement(
@@ -416,8 +422,8 @@ export async function loadTripDetail(id) {
 function renderBuddiesSection(trip, currentUser, onReload) {
   const section = createElement(
     "div",
-    { style: "margin-top:1rem" },
-    createElement("label", {}, "Your Buddies for this trip:")
+    { className: "buddy-section"},
+    createElement("label", {}, "Your Buddies for this trip:  ")
   );
 
   const list = createElement("div");
@@ -430,8 +436,7 @@ function renderBuddiesSection(trip, currentUser, onReload) {
     const badge = createElement(
       "span",
       {
-        className: "badge position-relative",
-        style: `background:${isSelf ? "#d9534f" : "#17a2b8"};color:#fff;margin-right:.25rem;padding:.25rem .5rem;border-radius:.25rem;`
+        className: `badge position-relative ${isSelf ? "buddy-badge-self" : "buddy-badge"}`
       },
       isSelf ? `${u} (You)` : u
     );

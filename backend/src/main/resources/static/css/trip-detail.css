@@ -186,3 +186,47 @@
     cursor: pointer;
     z-index: 2;
 }
+
+/* Buddy section inline with text */
+.buddy-section {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Buddy badge styles */
+.buddy-badge {
+    background: #17a2b8;
+    color: #fff;
+    margin-right: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.buddy-badge-self {
+    background: #d9534f;
+    color: #fff;
+    margin-right: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+}
+
+/* Ensure buttons are side by side with space */
+.trip-detail-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+/* Add padding to location cards in the locationsList */
+#locationsList .card {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
