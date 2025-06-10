@@ -1,10 +1,13 @@
-/**
- * Initialisiert die Navigationsleiste, indem sie dynamisch in das Element 'navbar' eingefügt wird.
- * Wird nur einmalig beim ersten Laden der Seite aufgerufen
- */
+//=============================================
+// IMPORTS
+//=============================================
 
 import { isLoggedIn, logout, getCurrentUser } from './auth.js';
 import { showLoginModal } from './loginModal.js';
+
+//=============================================
+// MAIN: INIT NAV BAR
+//=============================================
 
 export function initNavigationBar() {
     const navbar = document.getElementById('navbar');
@@ -13,18 +16,19 @@ export function initNavigationBar() {
         return;
     }
 
-    // Clear the current content to prevent duplicate navbars
+    // Clear the current content to prevent duplicates
     navbar.replaceChildren();
 
-    // <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    //=============================================
+    // STRUCTURE
+    //=============================================
+
     const nav = document.createElement('nav');
     nav.className = 'navbar navbar-expand-lg navbar-dark';
 
-    // <div class="container-fluid">
     const container = document.createElement('div');
     container.className = 'container-fluid';
 
-    // Link: TravelBuddy (führt zur Landing Page)
     const travelbuddy = document.createElement('a');
     travelbuddy.className = 'navbar-brand ms-5';
     travelbuddy.href = '#home';
@@ -38,7 +42,10 @@ export function initNavigationBar() {
 
     travelbuddy.appendChild(logo);
 
-    // Toggler-Button für die mobile Ansicht (zeigen/verstecken von Menüpunkten)
+    //=============================================
+    // RESPONSIVE: TOGGLER
+    //=============================================
+
     const toggler = document.createElement('button');
     toggler.className = 'navbar-toggler';
     toggler.type = 'button';
@@ -58,7 +65,10 @@ export function initNavigationBar() {
     collapse.className = 'collapse navbar-collapse';
     collapse.id = 'navbarNav';
 
-    // Left-side navigation
+    //=============================================
+    // LEFT SIDE NAV
+    //=============================================
+
     const leftUl = document.createElement('ul');
     leftUl.className = 'navbar-nav mb-2 mb-lg-0';
 
@@ -91,7 +101,10 @@ export function initNavigationBar() {
         leftUl.appendChild(li);
     });
 
-    // Right-side navigation (Logout/Login)
+    //=============================================
+    // RIGHT SIDE NAV
+    //=============================================
+
     const rightUl = document.createElement('ul');
     rightUl.className = 'navbar-nav ms-auto mb-2 mb-lg-0';
 
@@ -107,7 +120,10 @@ export function initNavigationBar() {
     authLi.appendChild(authLink);
     rightUl.appendChild(authLi);
 
-    // Update auth button based on login state
+    //=============================================
+    // AUTH BTN (based on login state)
+    //=============================================
+
     function updateAuthButton() {
         if (isLoggedIn()) {
             authLink.textContent = 'Logout';
@@ -133,7 +149,7 @@ export function initNavigationBar() {
     updateAuthButton();
 
 
-    // Aufbau der Elemente
+    // Assemble nav
     collapse.appendChild(leftUl);
     collapse.appendChild(rightUl);
     container.appendChild(travelbuddy);

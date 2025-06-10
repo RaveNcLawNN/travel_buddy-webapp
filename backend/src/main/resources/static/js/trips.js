@@ -7,7 +7,7 @@ import { getAllTrips, createTrip, getTripsByOrganizer, getTripsByParticipant } f
 import { isLoggedIn, getCurrentUser } from "./auth.js";
 
 //=============================================
-// MAIN ENTRY POINT: VIEW RENDERER
+// MAIN: VIEW RENDERER
 //=============================================
 
 export async function loadTrips(page = 1) {

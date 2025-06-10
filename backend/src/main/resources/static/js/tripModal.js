@@ -7,7 +7,7 @@ import { updateTrip, searchLocation, getBuddiesForUser } from "./api.js";
 import { getCurrentUser } from "./auth.js";
 
 //=============================================
-// MODAL ENTRY POINT: EDIT TRIP
+// MAIN: EDIT TRIP
 //=============================================
 
 export function openEditTripForm(trip, onSubmitCallback) {
@@ -38,7 +38,7 @@ export function openEditTripForm(trip, onSubmitCallback) {
     const form = createElement("form", { 
         id: "editTripForm", 
         className: "d-flex flex-column gap-3",
-        onsubmit: "return false;" // Prevent default form submission
+        onsubmit: "return false;"
     });
 
     const title = createElement("input", { type: "text", className: "form-control", id: "tripTitle", value: trip.title || "", required: true });

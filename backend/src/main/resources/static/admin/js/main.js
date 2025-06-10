@@ -2,15 +2,15 @@
 // Use this file to dynamically create HTML and interact with backend endpoints
 
 // Toggle views
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const userSection = document.getElementById('user-management-section');
     const tripSection = document.getElementById('trip-management-section');
-    document.getElementById('user-management-link').onclick = function() {
+    document.getElementById('user-management-link').onclick = function () {
         userSection.style.display = 'block';
         tripSection.style.display = 'none';
         fetchUsers();
     };
-    document.getElementById('trip-management-link').onclick = function() {
+    document.getElementById('trip-management-link').onclick = function () {
         userSection.style.display = 'none';
         tripSection.style.display = 'block';
         fetchTrips();
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Logout button logic
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-        logoutBtn.onclick = function() {
+        logoutBtn.onclick = function () {
             localStorage.removeItem('token');
             window.location.href = '/index.html';
         };
@@ -63,20 +63,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Toggle user role
-    window.toggleUserRole = function(username, newRole) {
+    window.toggleUserRole = function (username, newRole) {
         fetch(`/api/users/${username}/role`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: newRole })
         })
-        .then(res => {
-            if (res.ok) fetchUsers();
-            else alert('Failed to update user role');
-        });
+            .then(res => {
+                if (res.ok) fetchUsers();
+                else alert('Failed to update user role');
+            });
     }
 
     // Delete user
-    window.deleteUser = function(username) {
+    window.deleteUser = function (username) {
         fetch(`/api/users/${username}`, { method: 'DELETE' })
             .then(res => {
                 if (res.status === 204) fetchUsers();
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Delete trip
-    window.deleteTrip = function(tripId) {
+    window.deleteTrip = function (tripId) {
         fetch(`/api/trips/${tripId}`, { method: 'DELETE' })
             .then(res => {
                 if (res.status === 204) fetchTrips();

@@ -7,15 +7,16 @@ const API_BASE = '/api';
 // =============================================
 // HELPER: Fetch JSON or throw with error message
 // =============================================
+
 /**
- * Performs a fetch request, throws if response not ok,
- * parses JSON body if present.
+ * Performs a fetch request, throws if response not ok, parses JSON body if present.
  * @param {string} url - The endpoint URL
  * @param {object} [options={}] - Fetch options (method, headers, body, etc.)
  * @param {string} [errorMsg='Request failed'] - Error message prefix
  * @returns {Promise<any>} Parsed JSON response
  * @throws {Error} When response is not ok or JSON parsing fails
  */
+
 async function fetchJsonOrThrow(url, options = {}, errorMsg = 'Request failed') {
   const res = await fetch(url, options);
   if (!res.ok) {
@@ -29,10 +30,12 @@ async function fetchJsonOrThrow(url, options = {}, errorMsg = 'Request failed') 
 // =============================================
 // TRIPS
 // =============================================
+
 /**
  * Fetches all trips.
  * @returns {Promise<Array>} Array of trip objects
  */
+
 export async function getAllTrips() {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips`,
@@ -46,6 +49,7 @@ export async function getAllTrips() {
  * @param {string} id - Trip identifier
  * @returns {Promise<Object>} Trip object
  */
+
 export async function getTripById(id) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/${encodeURIComponent(id)}`,
@@ -59,6 +63,7 @@ export async function getTripById(id) {
  * @param {Object} payload - Trip data
  * @returns {Promise<Object>} Created trip object
  */
+
 export async function createTrip(payload) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips`,
@@ -77,6 +82,7 @@ export async function createTrip(payload) {
  * @param {Object} payload - Updated trip data
  * @returns {Promise<Object>} Updated trip object
  */
+
 export async function updateTrip(id, payload) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/${encodeURIComponent(id)}`,
@@ -94,6 +100,7 @@ export async function updateTrip(id, payload) {
  * @param {string} id - Trip identifier
  * @returns {Promise<void>}
  */
+
 export async function deleteTrip(id) {
   const res = await fetch(`${API_BASE}/trips/${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Failed to delete trip (id=${id})`);
@@ -102,11 +109,13 @@ export async function deleteTrip(id) {
 // =============================================
 // LOCATIONS
 // =============================================
+
 /**
  * Fetches locations for a given trip.
  * @param {string} tripId - Trip identifier
  * @returns {Promise<Array>} Array of location objects
  */
+
 export async function getLocationsByTrip(tripId) {
   return await fetchJsonOrThrow(
     `${API_BASE}/locations/trips/${encodeURIComponent(tripId)}`,
@@ -121,6 +130,7 @@ export async function getLocationsByTrip(tripId) {
  * @param {Object} payload - Location data
  * @returns {Promise<Object>} Created location object
  */
+
 export async function createLocation(tripId, payload) {
   return await fetchJsonOrThrow(
     `${API_BASE}/locations/trips/${encodeURIComponent(tripId)}`,
@@ -139,6 +149,7 @@ export async function createLocation(tripId, payload) {
  * @param {Object} payload - Updated location data
  * @returns {Promise<Object>} Updated location object
  */
+
 export async function updateLocation(id, payload) {
   return await fetchJsonOrThrow(
     `${API_BASE}/locations/${encodeURIComponent(id)}`,
@@ -156,6 +167,7 @@ export async function updateLocation(id, payload) {
  * @param {string} id - Location identifier
  * @returns {Promise<void>}
  */
+
 export async function deleteLocation(id) {
   const res = await fetch(`${API_BASE}/locations/${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Failed to delete location (id=${id})`);
@@ -164,11 +176,13 @@ export async function deleteLocation(id) {
 // =============================================
 // USER & PARTICIPANT ENDPOINTS
 // =============================================
+
 /**
  * Fetches user details by username.
  * @param {string} username - User's username
  * @returns {Promise<Object>} User object
  */
+
 export async function getUserByUsername(username) {
   return await fetchJsonOrThrow(
     `${API_BASE}/users/${encodeURIComponent(username)}`,
@@ -182,6 +196,7 @@ export async function getUserByUsername(username) {
  * @param {string} username - User's username
  * @returns {Promise<Array>} Array of buddy objects
  */
+
 export async function getBuddiesForUser(username) {
   return await fetchJsonOrThrow(
     `${API_BASE}/users/${encodeURIComponent(username)}/buddies`,
@@ -196,6 +211,7 @@ export async function getBuddiesForUser(username) {
  * @param {string} userId - User identifier to remove
  * @returns {Promise<void>}
  */
+
 export async function removeParticipantFromTrip(tripId, userId) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/${encodeURIComponent(tripId)}/participants/${encodeURIComponent(userId)}`,
@@ -207,11 +223,13 @@ export async function removeParticipantFromTrip(tripId, userId) {
 // =============================================
 // TRIP FILTERING BY USER ROLE
 // =============================================
+
 /**
  * Fetches trips organized by a specific user.
  * @param {string} userId - Organizer's user ID
  * @returns {Promise<Array>} Array of trip objects
  */
+
 export async function getTripsByOrganizer(userId) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/organizer/${encodeURIComponent(userId)}`,
@@ -225,6 +243,7 @@ export async function getTripsByOrganizer(userId) {
  * @param {string} userId - Participant's user ID
  * @returns {Promise<Array>} Array of trip objects
  */
+
 export async function getTripsByParticipant(userId) {
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/participant/${encodeURIComponent(userId)}`,
@@ -236,11 +255,13 @@ export async function getTripsByParticipant(userId) {
 // =============================================
 // EXTERNAL API: LOCATION SEARCH AND POIS
 // =============================================
+
 /**
  * Searches for location suggestions based on query.
  * @param {string} query - Search term for location
  * @returns {Promise<Array>} Array of location matches
  */
+
 export async function searchLocation(query) {
   const url = `${API_BASE}/locations/search?query=${encodeURIComponent(query)}`;
   return await fetchJsonOrThrow(
@@ -255,6 +276,7 @@ export async function searchLocation(query) {
  * @param {{ latitude: number, longitude: number, radius?: number, types?: string[] }} params - Search parameters
  * @returns {Promise<Array>} Array of POI objects
  */
+
 export async function searchPointsOfInterest({ latitude, longitude, radius = 1000, types = [] }) {
   const qs = new URLSearchParams({
     latitude: latitude.toString(),
@@ -273,12 +295,14 @@ export async function searchPointsOfInterest({ latitude, longitude, radius = 100
 // =============================================
 // EXTERNAL API: WEATHER
 // =============================================
+
 /**
  * Fetches weather forecast for given coordinates.
  * @param {number} latitude - Geographic latitude
  * @param {number} longitude - Geographic longitude
  * @returns {Promise<any>} Weather forecast data
  */
+
 export async function getWeather(latitude, longitude) {
   const qs = new URLSearchParams({
     latitude: latitude.toString(),

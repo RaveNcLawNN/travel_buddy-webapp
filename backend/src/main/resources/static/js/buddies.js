@@ -1,11 +1,19 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { getCurrentUser } from './auth.js';
 import { showProfileModal } from './profileModal.js';
 import { createElement } from './createElement.js';
 
+//=============================================
+// MAIN FUNCTION: LOAD & RENDER
+//=============================================
+
 export async function loadBuddies() {
     const app = document.getElementById('app');
     const currentUser = getCurrentUser();
-    
+
     if (!currentUser) {
         app.replaceChildren(createElement('div', { className: 'alert alert-warning' }, 'Please log in to view your buddies.'));
         return;
@@ -18,7 +26,10 @@ export async function loadBuddies() {
             fetch(`/api/users/${currentUser.username}/buddy-requests/sent`).then(r => r.json()),
         ]);
 
-        // Main container
+        //=============================================
+        // CONTAINER & HEADER
+        //=============================================
+
         const container = createElement('div', { className: 'container pt-5 pb-5' });
         container.appendChild(createElement('h1', { className: 'text-h1 mb-4' }, 'Buddies'));
 
@@ -30,7 +41,10 @@ export async function loadBuddies() {
         }, createElement('i', { className: 'fas fa-user-plus' }), ' Add Buddy');
         container.appendChild(addBuddyBtn);
 
-        // Pending Requests Section
+        //=============================================
+        // PENDING REQUESTS
+        //=============================================
+
         if (pendingRequests.length > 0) {
             const pendingCard = createElement('div', { className: 'card mb-4' },
                 createElement('div', { className: 'card-header' },
@@ -45,7 +59,10 @@ export async function loadBuddies() {
             container.appendChild(pendingCard);
         }
 
-        // Sent Requests Section
+        //=============================================
+        // SENT REQUESTS
+        //=============================================
+
         if (sentRequests.length > 0) {
             const sentCard = createElement('div', { className: 'card mb-4' },
                 createElement('div', { className: 'card-header' },
@@ -60,7 +77,10 @@ export async function loadBuddies() {
             container.appendChild(sentCard);
         }
 
-        // Buddies List
+        //=============================================
+        // LIST
+        //=============================================
+
         const buddiesCard = createElement('div', { className: 'card' },
             createElement('div', { className: 'card-header' },
                 createElement('h5', { className: 'mb-0' }, 'My Buddies')
@@ -75,7 +95,10 @@ export async function loadBuddies() {
         );
         container.appendChild(buddiesCard);
 
-        // Add Buddy Modal (refactored for accessibility and W3C compliance)
+        //=============================================
+        // "ADD BUDDY"
+        //=============================================
+
         if (!document.getElementById('addBuddyModal')) {
             const modal = createElement('div', {
                 className: 'modal fade',
@@ -87,6 +110,7 @@ export async function loadBuddies() {
             });
             const dialog = createElement('div', { className: 'modal-dialog' });
             const content = createElement('div', { className: 'modal-content' });
+
             // Header
             const header = createElement('div', { className: 'modal-header' },
                 createElement('h5', { className: 'modal-title', id: 'addBuddyModalLabel' }, 'Add Buddy'),
@@ -112,6 +136,7 @@ export async function loadBuddies() {
             );
             form.appendChild(formGroup);
             body.appendChild(form);
+
             // Footer
             const footer = createElement('div', { className: 'modal-footer' },
                 createElement('button', {
@@ -133,7 +158,11 @@ export async function loadBuddies() {
 
         app.replaceChildren(container);
 
-        // Event handlers for buddy actions
+        //=============================================
+        // HANDLERS
+        //=============================================
+
+        // Accept
         window.acceptBuddyRequest = async (buddyId) => {
             try {
                 await fetch(`/api/users/${currentUser.username}/buddy-request/${buddyId}/accept`, {
@@ -144,6 +173,8 @@ export async function loadBuddies() {
                 alert('Failed to accept buddy request');
             }
         };
+
+        // Reject
         window.rejectBuddyRequest = async (buddyId) => {
             try {
                 await fetch(`/api/users/${currentUser.username}/buddy-request/${buddyId}/reject`, {
@@ -154,6 +185,8 @@ export async function loadBuddies() {
                 alert('Failed to reject buddy request');
             }
         };
+
+        // Cancel
         window.cancelBuddyRequest = async (buddyId) => {
             try {
                 await fetch(`/api/users/${currentUser.username}/buddies/${buddyId}`, {
@@ -164,6 +197,8 @@ export async function loadBuddies() {
                 alert('Failed to cancel buddy request');
             }
         };
+
+        // Remove
         window.removeBuddy = async (buddyId) => {
             if (confirm('Are you sure you want to remove this buddy?')) {
                 try {
@@ -176,7 +211,11 @@ export async function loadBuddies() {
                 }
             }
         };
-        // Add Buddy Request
+        
+        //=============================================
+        // SEND REQUEST FORM
+        //=============================================
+
         const sendBtn = document.getElementById('sendBuddyRequestBtn');
         if (sendBtn) {
             sendBtn.onclick = async () => {
@@ -202,6 +241,11 @@ export async function loadBuddies() {
     }
 }
 
+//=============================================
+// HELPERS FOR LIST ITEM UI
+//=============================================
+
+// Render pending request
 function createPendingRequestItem(request) {
     const usernameLink = createElement('a', {
         href: '#',
@@ -228,6 +272,7 @@ function createPendingRequestItem(request) {
     );
 }
 
+// Render sent request
 function createSentRequestItem(request) {
     const username = createElement('h6', { className: 'mb-0' }, request.username);
     const email = createElement('small', { className: 'text-muted' }, request.email);
@@ -241,6 +286,7 @@ function createSentRequestItem(request) {
     );
 }
 
+// Render buddy
 function createBuddyItem(buddy) {
     const username = createElement('h6', { className: 'mb-0' }, buddy.username);
     const email = createElement('small', { className: 'text-muted' }, buddy.email);

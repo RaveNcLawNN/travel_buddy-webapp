@@ -1,8 +1,14 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from './createElement.js';
 
-/**
- * Maps weather condition codes to CSS classes for icon styling.
- */
+//=============================================
+// WEATHER MAPPING & HELPERS
+//=============================================
+
+// maps conditions to CSS classes
 const weatherCssMap = {
   0:  'clear',
   1:  'mostlycloudy',
@@ -29,15 +35,21 @@ const weatherCssMap = {
  * @param {number} code - Weather condition code
  * @returns {string} CSS class name
  */
+
 export function getCssClassForCode(code) {
   return weatherCssMap[code] || 'unknown';
 }
+
+//=============================================
+// DATA FORMAT
+//=============================================
 
 /**
  * Formats an ISO timestamp into "DD.MM.YYYY HH:MM".
  * @param {string} isoString - ISO date-time string
  * @returns {string} Formatted date and time
  */
+
 export function formatDateTime(isoString) {
   const date = new Date(isoString);
   const day = String(date.getDate()).padStart(2, '0');
@@ -53,6 +65,7 @@ export function formatDateTime(isoString) {
  * @param {string} isoString - ISO date string
  * @returns {string} Formatted date
  */
+
 export function formatDate(isoString) {
   const date = new Date(isoString);
   const day = String(date.getDate()).padStart(2, '0');
@@ -61,11 +74,16 @@ export function formatDate(isoString) {
   return `${day}.${month}.${year}`;
 }
 
+//=============================================
+// NAVIGATION
+//=============================================
+
 /**
  * Determines the initial index for hourly data based on current time.
  * @param {Array} hourlyData - Array of hourly forecast objects
  * @returns {number} Index of the first forecast at or after now
  */
+
 export function calculateInitialHourlyIndex(hourlyData) {
   if (!Array.isArray(hourlyData) || hourlyData.length === 0) {
     return 0;
@@ -75,11 +93,16 @@ export function calculateInitialHourlyIndex(hourlyData) {
   return idx >= 0 ? idx : hourlyData.length - 1;
 }
 
+//=============================================
+// WEATHER ICON UI
+//=============================================
+
 /**
  * Creates a decorative weather icon element.
  * @param {number} code - Weather condition code
  * @returns {HTMLElement} Icon wrapper element
  */
+
 function createWeatherIcon(code) {
   const wrapper = createElement('div', {
     className: 'd-flex justify-content-center mb-3',
@@ -103,6 +126,7 @@ function createWeatherIcon(code) {
  * @param {string} label - Label for aria attributes
  * @returns {HTMLElement} Navigation container
  */
+
 function createForecastNavigation(currentIndex, maxIndex, onPrev, onNext, label) {
   const prevButton = createElement('button', {
     className: 'btn btn-sm btn-primary me-2 mt-2 mb-2',
@@ -127,11 +151,16 @@ function createForecastNavigation(currentIndex, maxIndex, onPrev, onNext, label)
   }, prevButton, nextButton);
 }
 
+//=============================================
+// RENDERERS: CURRENT; HOURLY; DAILY
+//=============================================
+
 /**
  * Renders the current weather into the provided container.
  * @param {Object|null} current - Current weather data or null
  * @param {HTMLElement} container - DOM container to render into
  */
+
 export function renderCurrent(current, container) {
   container.replaceChildren();
   if (!current) {
@@ -155,6 +184,7 @@ export function renderCurrent(current, container) {
  * @param {number} index - Index of entry to render
  * @param {HTMLElement} container - DOM container to render into
  */
+
 export function renderHourly(hourlyData, index, container) {
   container.replaceChildren();
   if (!Array.isArray(hourlyData) || hourlyData.length === 0) {
@@ -187,6 +217,7 @@ export function renderHourly(hourlyData, index, container) {
  * @param {number} index - Index of entry to render
  * @param {HTMLElement} container - DOM container to render into
  */
+
 export function renderDaily(dailyData, index, container) {
   container.replaceChildren();
   if (!Array.isArray(dailyData) || dailyData.length === 0) {

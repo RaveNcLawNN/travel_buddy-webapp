@@ -1,5 +1,12 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from "./createElement.js";
 
+//=============================================
+// FOOTER INIT
+//=============================================
 
 export function initFooterBar() {
     const footer = document.getElementById('footer');

@@ -1,19 +1,23 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { initNavigationBar } from './navigation-bar.js';
 import { route } from './router.js';
 import { initFooterBar } from './footer.js';
 import { loadHome } from './home.js';
 
-// damit auf die URL-Änderungen reagiert wird
+// Handler for URL changes
 window.addEventListener('hashchange', route);
 
-// Initialisierung beim loaden der Website
+// Init URL load
 document.addEventListener('DOMContentLoaded', () => {
     initNavigationBar();
     initFooterBar();
     route();
 });
 
-// Universal modal closing solution for Bootstrap modals
+// Helper for Modal closing
 function closeAllModals() {
   const openModals = document.querySelectorAll('.modal.show');
   openModals.forEach(modal => {

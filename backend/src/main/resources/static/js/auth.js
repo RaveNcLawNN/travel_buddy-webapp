@@ -1,4 +1,6 @@
-/*´Login/session handling */
+//=============================================
+// TOKEN HANDLING
+//=============================================
 
 // Store the JWT token in localStorage
 export function setToken(token) {
@@ -15,18 +17,21 @@ export function removeToken() {
     localStorage.removeItem('token');
 }
 
+//=============================================
+// USER INFO/AUTHENTICATION STATUS
+//=============================================
+
 // Get the current user from localStorage
 export function getCurrentUser() {
     const token = getToken();
     if (!token) return null;
 
     try {
-        // Decode the JWT token (it's in the format: header.payload.signature)
+        // Decode the JWT token
         const payload = JSON.parse(atob(token.split('.')[1]));
         return {
             username: payload.sub,
             id: payload.id,
-            // Add any other user properties you need
         };
     } catch (error) {
         console.error('Error decoding token:', error);
@@ -38,6 +43,11 @@ export function getCurrentUser() {
 export function isLoggedIn() {
     return getToken() !== null;
 }
+
+//=============================================
+// LOGIN/REGISTRATION/LOGOUT
+//=============================================
+
 
 // Handle login
 export async function login(username, password) {
@@ -121,7 +131,10 @@ export function logout() {
     window.location.hash = 'home';
 }
 
-// Add authorization header to fetch requests
+//=============================================
+// FETCH HELPER WITH AUTH
+//=============================================
+
 export function fetchWithAuth(url, options = {}) {
     const token = getToken();
     if (token) {
