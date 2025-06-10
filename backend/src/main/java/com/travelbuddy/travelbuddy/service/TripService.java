@@ -44,6 +44,21 @@ public class TripService {
      */
     @Transactional
     public Trip updateTrip(Trip trip) {
+        // Ensure the trip exists
+        if (trip.getId() == null) {
+            throw new IllegalArgumentException("Trip ID cannot be null");
+        }
+        
+        // Ensure the organizer is set
+        if (trip.getOrganizer() == null) {
+            throw new IllegalArgumentException("Trip organizer cannot be null");
+        }
+        
+        // Ensure the organizer is a participant
+        if (!trip.getParticipants().contains(trip.getOrganizer())) {
+            trip.getParticipants().add(trip.getOrganizer());
+        }
+        
         return tripRepository.save(trip);
     }
 

@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 /**
  * REST controller for trip-related operations.
@@ -255,26 +256,42 @@ public class TripController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTrip(@PathVariable Long id, @Valid @RequestBody TripDto tripDto) {
-        Optional<Trip> tripOpt = tripService.findById(id);
-        if (tripOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
+        try {
+            Optional<Trip> tripOpt = tripService.findById(id);
+            if (tripOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Trip not found"));
+            }
+
+            Trip trip = tripOpt.get();
+
+            // Update basic trip properties
+            tripMapper.updateEntityFromDto(tripDto, trip);
+
+            // Handle participants
+            if (tripDto.getParticipantUsernames() != null) {
+                Set<User> participants = tripDto.getParticipantUsernames().stream()
+                    .map(username -> userRepository.findByUsername(username).orElse(null))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+                // Always include the organizer
+                if (trip.getOrganizer() != null) {
+                    participants.add(trip.getOrganizer());
+                }
+
+                trip.setParticipants(participants);
+            }
+
+            // DO NOT touch trip.setLocations() here!
+
+            Trip updatedTrip = tripService.updateTrip(trip);
+            return ResponseEntity.ok(tripMapper.toDto(updatedTrip));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Error updating trip: " + e.getMessage()));
         }
-        Trip trip = tripOpt.get();
-        tripMapper.updateEntityFromDto(tripDto, trip);
-        if (tripDto.getParticipantUsernames() != null) {
-            Set<User> participants = tripDto.getParticipantUsernames().stream()
-                .map(username -> userRepository.findByUsername(username).orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-            participants.add(trip.getOrganizer());
-            trip.setParticipants(participants);
-        }
-        // Ensure each location has the trip set
-        if (trip.getLocations() != null) {
-            trip.getLocations().forEach(location -> location.setTrip(trip));
-        }
-        Trip updatedTrip = tripService.updateTrip(trip);
-        return ResponseEntity.ok(tripMapper.toDto(updatedTrip));
     }
 
     /**

@@ -158,7 +158,10 @@ public class LocationController {
             return ResponseEntity.notFound().build();
         }
         var locations = locationService.findByTrip(tripOpt.get());
-        var dtos = locations.stream().map(locationMapper::toDto).toList();
+        var dtos = locations.stream()
+            .map(locationMapper::toDto)
+            .peek(dto -> dto.setTripId(tripId))
+            .toList();
         return ResponseEntity.ok(dtos);
     }
 

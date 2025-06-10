@@ -33,7 +33,7 @@ public interface TripMapper {
     @Mapping(target = "participants", ignore = true)
     @Mapping(target = "latitude", source = "latitude")
     @Mapping(target = "longitude", source = "longitude")
-    @Mapping(target = "locations", source = "locations")
+    @Mapping(target = "locations", ignore = true)
     void updateEntityFromDto(TripDto tripDto, @MappingTarget Trip trip);
 
     // Helper for mapping participants to usernames

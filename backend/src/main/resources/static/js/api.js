@@ -84,12 +84,18 @@ export async function createTrip(payload) {
  */
 
 export async function updateTrip(id, payload) {
+  // First get the current trip to preserve existing data
+  const currentTrip = await getTripById(id);
+  const updatedPayload = {
+    ...currentTrip,
+    ...payload
+  };
   return await fetchJsonOrThrow(
     `${API_BASE}/trips/${encodeURIComponent(id)}`,
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(updatedPayload)
     },
     'Failed to update trip'
   );

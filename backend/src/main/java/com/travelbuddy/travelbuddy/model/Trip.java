@@ -68,7 +68,7 @@ public class Trip {
     @Builder.Default
     private TripStatus status = TripStatus.PLANNING;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Location> locations = new ArrayList<>();
 

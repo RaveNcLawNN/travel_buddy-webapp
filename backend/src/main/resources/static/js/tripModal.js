@@ -236,10 +236,21 @@ export async function openBuddiesModal(trip, onSubmitCallback) {
         if (!selectedBuddies.includes(trip.organizerUsername)) {
             selectedBuddies.push(trip.organizerUsername);
         }
-        // Update the trip's participants
+        // Send all required fields for TripDto except locations
         const updatedTrip = {
-            ...trip,
+            id: trip.id,
+            title: trip.title,
+            description: trip.description,
+            startDate: trip.startDate,
+            endDate: trip.endDate,
+            destination: trip.destination,
+            latitude: trip.latitude,
+            longitude: trip.longitude,
+            organizerId: trip.organizerId || trip.organizer?.id,
+            organizerUsername: trip.organizerUsername,
+            status: trip.status,
             participantUsernames: selectedBuddies
+            // Do NOT include locations!
         };
 
         try {
@@ -251,7 +262,15 @@ export async function openBuddiesModal(trip, onSubmitCallback) {
                 body: JSON.stringify(updatedTrip)
             });
             if (!response.ok) {
-                throw new Error('Failed to update trip');
+                const contentType = response.headers.get("content-type");
+                let errorMessage;
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message;
+                } else {
+                    errorMessage = await response.text();
+                }
+                throw new Error(errorMessage || 'Failed to update trip');
             }
             if (typeof onSubmitCallback === "function") {
                 onSubmitCallback();
