@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -346,5 +347,21 @@ public class UserController {
                 .role(user.getRole())
                 .build())
             .toList();
+    }
+
+    @PatchMapping("/{username}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable String username, @RequestBody Map<String, String> updates) {
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userOpt.get();
+        String newRole = updates.get("role");
+        if (newRole == null) {
+            return ResponseEntity.badRequest().body("Missing 'role' field");
+        }
+        user.setRole(newRole);
+        userService.registerUser(user); // reuses registration logic for saving
+        return ResponseEntity.ok().build();
     }
 } 
