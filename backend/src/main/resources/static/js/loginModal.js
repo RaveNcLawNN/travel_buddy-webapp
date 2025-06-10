@@ -1,13 +1,25 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from './createElement.js';
 import { login, register, isLoggedIn } from './auth.js';
 import { initNavigationBar } from './navigation-bar.js';
+
+//=============================================
+// MAIN: SHOW LOGIN/REGISTER MODAL
+//=============================================
 
 export function showLoginModal() {
     // Remove any existing modal
     const existing = document.getElementById('loginModal');
     if (existing) existing.remove();
 
-    // Modal structure
+    //=============================================
+    // STRUCTURE
+    //=============================================
+
+    // Base elements
     const modal = createElement('div', { className: 'modal fade', id: 'loginModal', tabIndex: -1 });
     const dialog = createElement('div', { className: 'modal-dialog' });
     const content = createElement('div', { className: 'modal-content' });
@@ -21,7 +33,10 @@ export function showLoginModal() {
     // Feedback message area
     const messageDiv = createElement('div', { id: 'loginModalMessage', className: 'alert', style: 'display:none;' });
 
-    // Tabs
+    //=============================================
+    // TABS (LOGIN/REGISTER)
+    //=============================================
+
     const navTabs = createElement('ul', { className: 'nav nav-tabs', role: 'tablist' },
         createElement('li', { className: 'nav-item', role: 'presentation' },
             createElement('button', {
@@ -47,14 +62,16 @@ export function showLoginModal() {
         )
     );
 
-    // Login Form
+    //=============================================
+    // LOGIN & REGISTER FORM
+    //=============================================
+
     const loginForm = createElement('form', { id: 'loginForm' },
         createFormGroup('Username', createElement('input', { type: 'text', className: 'form-control', id: 'loginUsername', required: true })),
         createFormGroup('Password', createElement('input', { type: 'password', className: 'form-control', id: 'loginPassword', required: true })),
         createElement('button', { type: 'submit', className: 'btn btn-primary w-100' }, 'Login')
     );
 
-    // Register Form
     const registerForm = createElement('form', { id: 'registerForm' },
         createFormGroup('Username', createElement('input', { type: 'text', className: 'form-control', id: 'registerUsername', required: true })),
         createFormGroup('Email', createElement('input', { type: 'email', className: 'form-control', id: 'registerEmail', required: true })),
@@ -77,11 +94,17 @@ export function showLoginModal() {
     modal.appendChild(dialog);
     document.body.appendChild(modal);
 
-    // Bootstrap modal instance
+    //=============================================
+    // SHOW MODAL (BOOTSTRAP)
+    //=============================================
+
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 
-    // Helper to show feedback messages
+    //=============================================
+    // HELPERS
+    //=============================================
+
     function showMessage(msg, type = 'success') {
         messageDiv.textContent = msg;
         messageDiv.className = 'alert alert-' + type;
@@ -92,7 +115,11 @@ export function showLoginModal() {
         messageDiv.style.display = 'none';
     }
 
-    // Event handlers
+    //=============================================
+    // HANDLERS
+    //=============================================
+
+    // Login form
     loginForm.onsubmit = async (e) => {
         e.preventDefault();
         hideMessage();
@@ -106,6 +133,8 @@ export function showLoginModal() {
             showMessage(err.message || 'Login failed', 'danger');
         }
     };
+
+    // Register form
     registerForm.onsubmit = async (e) => {
         e.preventDefault();
         hideMessage();

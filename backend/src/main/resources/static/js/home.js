@@ -1,6 +1,7 @@
-// =============================================
+//=============================================
 // IMPORTS
-// =============================================
+//=============================================
+
 import { createElement } from './createElement.js';
 import {
   searchLocation,
@@ -20,12 +21,12 @@ import {
   renderDaily
 } from './weather.js';
 
-// =============================================
+//=============================================
 // HERO SECTION
-// =============================================
-/**
- * Creates the hero section with heading, subtitle, and search form.
- */
+//=============================================
+
+
+// Creates the hero section with heading, subtitle, and search form.
 function createHeroSection(onSearch) {
   const heading = createElement('h1', {
     className: 'text-h1-home',
@@ -67,12 +68,11 @@ function createHeroSection(onSearch) {
   return createElement('section', { id: 'hero-section', 'aria-labelledby': 'hero-heading' }, content);
 }
 
-// =============================================
+//=============================================
 // MAP + SIDEBAR WITH TABS
-// =============================================
-/**
- * Builds the map container and sidebar with tab panels.
- */
+//=============================================
+
+// Builds the map container and sidebar with tab panels.
 function createMapContainer() {
   const section = createElement('section', { id: 'map-container', 'aria-label': 'Map and weather details' });
   const mapDiv = createElement('div', { id: 'map', 'aria-label': 'Interactive map' });
@@ -126,12 +126,11 @@ function createMapContainer() {
   return section;
 }
 
-// =============================================
+//=============================================
 // MAIN ENTRY POINT
-// =============================================
-/**
- * Loads the home view, initializes map and event handlers.
- */
+//=============================================
+
+// Loads the home view, initializes map and event handlers.
 export async function loadHome() {
   const app = document.getElementById('app');
   if (!app) {
@@ -165,9 +164,8 @@ export async function loadHome() {
     }
   });
 
-  /**
-   * Event handler for city search form submission.
-   */
+  
+  // Event handler for city search form submission.
   async function onSearch(e) {
     e.preventDefault();
     const query = document.getElementById('citySearchInput').value.trim();
@@ -196,9 +194,7 @@ export async function loadHome() {
     }
   }
 
-  /**
-   * Loads points of interest via API and places markers.
-   */
+  // Loads points of interest via API and places markers.
   async function loadPois(lat, lon, types, radius) {
     poiMarkers = clearMapMarkers(map, poiMarkers);
     if (!types.length) return;
@@ -208,9 +204,9 @@ export async function loadHome() {
       pois.forEach(poi => {
         const typeKey = (poi.type || 'default').toLowerCase();
         if (!types.includes(typeKey)) return;
-        const popup = `<strong>${poi.name}</strong><br>Type: ${poi.type}` 
-                    + (poi.website ? `<br><a href="${poi.website}" target="_blank">Website</a>` : '')
-                    + (poi.phone   ? `<br>Phone: ${poi.phone}` : '');
+        const popup = `<strong>${poi.name}</strong><br>Type: ${poi.type}`
+          + (poi.website ? `<br><a href="${poi.website}" target="_blank">Website</a>` : '')
+          + (poi.phone ? `<br>Phone: ${poi.phone}` : '');
         const marker = setMapMarker(map, poi.latitude, poi.longitude, popup, null, typeKey);
         poiMarkers.push(marker);
       });
@@ -219,9 +215,8 @@ export async function loadHome() {
     }
   }
 
-  /**
-   * Renders weather data into current, hourly, and daily tabs.
-   */
+  
+  // Renders weather data into current, hourly, and daily tabs.
   function renderWeather(data) {
     dailyIndex = 0;
     hourlyIndex = calculateInitialHourlyIndex(data.hourlyWeatherData);

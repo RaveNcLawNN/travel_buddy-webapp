@@ -1,11 +1,22 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { createElement } from './createElement.js';
 
+//=============================================
+// SHOW PROFILE MODAL
+//=============================================
+
 export function showProfileModal(username) {
-    // Remove any existing modal
     const existing = document.getElementById('profileModal');
     if (existing) existing.remove();
 
-    // Modal structure
+    //=============================================
+    // STRUCTURE
+    //=============================================
+
+    // Base elements
     const modal = createElement('div', { className: 'modal fade', id: 'profileModal', tabIndex: -1 });
     const dialog = createElement('div', { className: 'modal-dialog' });
     const content = createElement('div', { className: 'modal-content' });
@@ -21,6 +32,7 @@ export function showProfileModal(username) {
         createElement('p', {}, `This is a placeholder for ${username}'s profile.`)
     );
 
+    // Assemble modal
     content.append(header, body);
     dialog.appendChild(content);
     modal.appendChild(dialog);

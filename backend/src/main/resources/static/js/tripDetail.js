@@ -411,7 +411,6 @@ export async function loadTripDetail(id) {
     loadPois();
   }
 
-  // ---------- START ----------
   await loadAndRenderLocations();
 }
 

@@ -1,5 +1,13 @@
+//=============================================
+// IMPORTS
+//=============================================
+
 import { getCurrentUser } from './auth.js';
 import { createElement } from './createElement.js';
+
+//=============================================
+// MAIN: LOAD & RENDER PROFILE
+//=============================================
 
 export function loadProfile() {
   const app = document.getElementById('app');
@@ -15,6 +23,10 @@ export function loadProfile() {
     );
     return;
   }
+
+  //=============================================
+  // STRUCTURE
+  //=============================================
 
   const container = createElement('div', { className: 'container py-4 pt-5 pb-5' });
   const row = createElement('div', { className: 'row g-4' });
@@ -33,6 +45,7 @@ export function loadProfile() {
   });
   const uploadBtn = createElement('button', { className: 'btn btn-primary w-100 mb-3' }, 'Upload Picture');
   uploadBtn.onclick = () => fileInput.click();
+
   fileInput.onchange = () => {
     const file = fileInput.files[0];
     if (file) {
@@ -52,6 +65,8 @@ export function loadProfile() {
 
   // Display Profile Picture
   const pictureDisplay = createElement('div', { className: 'text-center' });
+
+  // Helper: Render or update pic
   function displayProfilePicture() {
     const pictureUrl =
       localStorage.getItem(`profilePicture_${currentUser.username}`) ||
@@ -95,7 +110,7 @@ export function loadProfile() {
   mainCard.appendChild(mainBody);
   mainCol.appendChild(mainCard);
 
-  // Assemble layout
+  // Assemble profile
   row.appendChild(sidebarCol);
   row.appendChild(mainCol);
   container.appendChild(row);

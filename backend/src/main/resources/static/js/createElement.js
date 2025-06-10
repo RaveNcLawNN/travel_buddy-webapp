@@ -1,3 +1,7 @@
+//=============================================
+// CREATE ELEMENT HELPER
+//=============================================
+
 export function createElement(tag, attributes = {}, ...children) {
   const element = document.createElement(tag);
   Object.entries(attributes).forEach(([key, value]) => {

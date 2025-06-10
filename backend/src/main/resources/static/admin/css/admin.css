@@ -7,7 +7,8 @@ h3 {
     color: #333;
 }
 
-.user-item, .trip-item {
+.user-item,
+.trip-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -39,7 +40,9 @@ h3 {
     gap: 10px;
 }
 
-button, .role-toggle, .delete {
+button,
+.role-toggle,
+.delete {
     border-radius: 0 !important;
 }
 
@@ -52,9 +55,11 @@ button {
     background: #007bff;
     transition: background 0.2s;
 }
+
 button.delete {
     background: #ff6600;
 }
+
 button:hover {
     opacity: 0.85;
 }
@@ -69,12 +74,15 @@ button:hover {
     font-size: 0.95em;
     transition: background 0.2s;
 }
+
 .role-toggle.promote {
     background: #ff9800;
 }
+
 .role-toggle.demote {
     background: #6c757d;
 }
+
 .role-toggle:hover {
     opacity: 0.85;
-} 
+}
