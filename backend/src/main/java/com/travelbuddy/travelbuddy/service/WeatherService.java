@@ -15,6 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Service for retrieving weather data using the Open-Meteo API.
+ * 
+ * This service provides functionality to fetch current weather conditions,
+ * hourly forecasts, and daily forecasts for any location using its coordinates.
+ * It handles the communication with the Open-Meteo API and processes the response
+ * into structured DTOs for easy consumption by the application.
+ */
 @Service
 public class WeatherService {
     private static final String API_URL = "https://api.open-meteo.com/v1/forecast?timezone=auto";
@@ -33,6 +41,18 @@ public class WeatherService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Retrieves comprehensive weather data for a specific location.
+     * 
+     * This method fetches current weather conditions, hourly forecasts for the next 24 hours,
+     * and daily forecasts for the next 7 days. The data includes temperature, humidity,
+     * precipitation, wind speed, and other meteorological parameters.
+     * 
+     * @param lati the latitude coordinate of the location
+     * @param longi the longitude coordinate of the location
+     * @return WeatherLocationDto containing current conditions, hourly and daily forecasts
+     * @throws RuntimeException if there's an error parsing the Open-Meteo API response
+     */
     public WeatherLocationDto getWeatherData(double lati, double longi)
     {
         String url = UriComponentsBuilder.fromUriString(URL_BASE)

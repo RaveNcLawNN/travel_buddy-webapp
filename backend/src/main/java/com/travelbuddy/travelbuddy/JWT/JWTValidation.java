@@ -18,6 +18,7 @@ import com.travelbuddy.travelbuddy.service.UserService;
 import java.io.IOException;
 import java.util.Collections;
 
+// This class is used to validate the JWT token for the user. It is used in the SecurityConfig class.
 @Component
 public class JWTValidation extends OncePerRequestFilter {
 
@@ -29,11 +30,13 @@ public class JWTValidation extends OncePerRequestFilter {
         this.userService = userService;
     }
 
+    //doFilterInternal is the method that is used to validate the JWT token for the user.
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
+        // If the authHeader is not null and starts with "Bearer ", we can extract the token.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7); // remove "Bearer " prefix
 
@@ -52,7 +55,8 @@ public class JWTValidation extends OncePerRequestFilter {
             }
         }
 
-        // Continue filter chain
+        // Continue filter chain. the chain is the list of filters that are applied to the request. the list of 
+        // filters are defined in the SecurityConfig class.
         filterChain.doFilter(request, response);
     }
 }

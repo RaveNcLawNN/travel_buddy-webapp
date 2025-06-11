@@ -2,6 +2,8 @@
 // CREATE ELEMENT HELPER
 //=============================================
 
+// This function is used to create elements in the DOM. Other functions use this function to create elements.
+// It takes in a tag, attributes, and children and returns an element.
 export function createElement(tag, attributes = {}, ...children) {
   const element = document.createElement(tag);
   Object.entries(attributes).forEach(([key, value]) => {

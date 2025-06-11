@@ -21,9 +21,9 @@ import java.time.LocalDateTime;
 
 
 /**
- * Configuration class for initializing test data in the H2 database.
- * This is only active during development and testing.
+ * Configuration class for initializing test data in the database.
  */
+// Component lets Spring know that this class is a Spring bean. A bean is an object that is managed by Spring.
 @Component
 public class DataInitializer implements CommandLineRunner {
 

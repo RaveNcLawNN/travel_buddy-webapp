@@ -1,6 +1,10 @@
-// Placeholder for admin panel JavaScript logic
-// Use this file to dynamically create HTML and interact with backend endpoints
-
+/*
+ * main.js - Admin Panel Haupt-JavaScript
+ *
+ * Dieses File steuert die Logik für das Admin-Panel der TravelBuddy-Webanwendung.
+ * Es ermöglicht die Verwaltung von Benutzern (Rollenwechsel, Löschen) und Reisen (Löschen),
+ * steuert die Sichtbarkeit der Verwaltungsbereiche und behandelt Logout-Funktionalität.
+ */
 // Toggle views
 document.addEventListener('DOMContentLoaded', function () {
     const userSection = document.getElementById('user-management-section');

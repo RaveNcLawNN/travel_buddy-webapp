@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Security configuration class that provides security-related beans and configures security rules.
+ * It includes a bean for password encryption and a security filter chain that configures security rules.
  */
 @Configuration
 @EnableWebSecurity
@@ -42,18 +43,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JWTValidation jwtValidation) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/h2-console/**", "/api/users/login", "/api/users/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/users/login", "/api/users/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin-only endpoints
                 .anyRequest().permitAll() // Temporarily permit all requests for accessibility
             )
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())) // Required for H2 console
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/**", "/swagger-ui/**")) // Disable CSRF for H2 console and API
+                .ignoringRequestMatchers("/api/**", "/swagger-ui/**")) // Disable CSRF for API and Swagger UI
             .addFilterBefore(jwtValidation, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
 
+    // This is where the OpenAPI is configured. It is used to generate the API documentation.
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()

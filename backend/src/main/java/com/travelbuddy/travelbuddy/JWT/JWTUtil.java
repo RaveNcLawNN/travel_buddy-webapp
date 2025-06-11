@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.travelbuddy.travelbuddy.model.User;
 
+// This class is used to generate and validate JWT tokens for the user.
 @Component
 public class JWTUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -26,6 +27,7 @@ public class JWTUtil {
                 .compact(); // Build the token
     }
 
+    // This method is used to validate the JWT token, i.e. check if the token is valid and not expired.
     public String validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parserBuilder()

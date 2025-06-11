@@ -338,8 +338,15 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieves a list of all users (username, email, role only).
+     *
+     * @return a list of UserDto objects for all users
+     */
+    @Operation(summary = "Get all users", description = "Retrieves a list of all users with their username, email, and role.")
     @GetMapping
     public List<UserDto> getAllUsers() {
+        // Fetch all users and map them to UserDto (without password)
         return userService.findAll().stream()
             .map(user -> UserDto.builder()
                 .username(user.getUsername())
@@ -349,17 +356,29 @@ public class UserController {
             .toList();
     }
 
+    /**
+     * Updates the role of a user by username.
+     *
+     * @param username the username whose role should be updated
+     * @param updates a map containing the new role (key: "role")
+     * @return 200 OK if updated, 404 if user not found, 400 if role missing
+     */
+    @Operation(summary = "Update user role", description = "Updates the role of a user. Expects a JSON body with a 'role' field. Example: {\"role\": \"ADMIN\"}")
     @PatchMapping("/{username}/role")
     public ResponseEntity<?> updateUserRole(@PathVariable String username, @RequestBody Map<String, String> updates) {
+        // Try to find the user by username
         Optional<User> userOpt = userService.findByUsername(username);
         if (userOpt.isEmpty()) {
+            // User not found
             return ResponseEntity.notFound().build();
         }
         User user = userOpt.get();
         String newRole = updates.get("role");
         if (newRole == null) {
+            // No role provided in request
             return ResponseEntity.badRequest().body("Missing 'role' field");
         }
+        // Set the new role (always uppercase)
         user.setRole(newRole.toUpperCase());
         userService.saveUser(user); // Do not re-encode password
         return ResponseEntity.ok().build();

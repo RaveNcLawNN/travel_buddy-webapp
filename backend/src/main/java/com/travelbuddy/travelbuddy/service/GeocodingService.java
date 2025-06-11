@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * Service for geocoding operations using OpenStreetMap's Nominatim API.
+ * This service is used to search for locations by name to get the coordinates of the location.
  */
 @Service
 public class GeocodingService {

@@ -151,6 +151,13 @@ public class LocationController {
      * @param tripId the trip ID
      * @return list of locations for the trip
      */
+    @Operation(summary = "Get locations by trip ID", description = "Retrieves all locations associated with a specific trip.",
+        parameters = @Parameter(name = "tripId", description = "Trip ID", example = "1"),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "List of locations found"),
+            @ApiResponse(responseCode = "404", description = "Trip not found")
+        }
+    )
     @GetMapping("/trips/{tripId}")
     public ResponseEntity<List<LocationDto>> getLocationsByTrip(@PathVariable Long tripId) {
         var tripOpt = tripService.findById(tripId);
@@ -202,9 +209,18 @@ public class LocationController {
 
     /**
      * Deletes a location by its ID.
-     * @param id the location ID
-     * @return 204 No Content if deleted, 404 Not Found otherwise
+     * This endpoint removes a location from the system. Note that this will also remove any associated data.
+     * 
+     * @param id the location ID to delete
+     * @return 204 No Content if deleted successfully, 404 Not Found if location doesn't exist
      */
+    @Operation(summary = "Delete location by ID", description = "Deletes a location from the system. This operation cannot be undone.",
+        parameters = @Parameter(name = "id", description = "Location ID to delete", example = "1"),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "Location deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Location not found")
+        }
+    )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
         var locationOpt = locationService.findById(id);

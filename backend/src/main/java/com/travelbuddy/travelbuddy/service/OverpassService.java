@@ -14,6 +14,13 @@ import java.util.HashMap;
 
 /**
  * Service for querying points of interest using Overpass API.
+ * 
+ * This service provides functionality to search for various points of interest (POIs) 
+ * around a given location using the Overpass API. It supports searching for different 
+ * types of amenities like restaurants, cafes, hotels, and tourist attractions.
+ * 
+ * The service maps common amenity types to their corresponding OpenStreetMap tags
+ * and constructs appropriate Overpass QL queries to fetch the data.
  */
 @Service
 public class OverpassService {
@@ -29,12 +36,16 @@ public class OverpassService {
     /**
      * Search for points of interest within a radius of given coordinates.
      * 
+     * This method constructs an Overpass QL query to find various types of amenities
+     * within the specified radius. The query is built dynamically based on the requested
+     * amenity types, which are mapped to their corresponding OpenStreetMap tags.
+     * 
      * @param latitude       Center point latitude
      * @param longitude      Center point longitude
      * @param radiusInMeters Search radius in meters
-     * @param amenityTypes   List of amenity types to search for (e.g.,
-     *                       "restaurant", "cafe", "hotel")
-     * @return List of points of interest
+     * @param amenityTypes   List of amenity types to search for (e.g., "restaurant", "cafe", "hotel")
+     * @return List of points of interest with their details (name, coordinates, type, website, phone)
+     * @throws RuntimeException if there's an error parsing the Overpass API response
      */
     public List<PointOfInterest> searchPointsOfInterest(
             double latitude,
@@ -121,7 +132,13 @@ public class OverpassService {
                 .block();
     }
 
-    // Capitalize the first letter of the type
+    /**
+     * Capitalizes the first letter of a string.
+     * Used for formatting amenity types in a consistent way.
+     * 
+     * @param s the string to capitalize
+     * @return the capitalized string, or the original string if null or empty
+     */
     private static String capitalize(String s) {
         if (s == null || s.isEmpty())
             return s;
@@ -129,7 +146,9 @@ public class OverpassService {
     }
 
     /**
-     * Inner class to represent a point of interest from Overpass API.
+     * Inner class representing a point of interest from the Overpass API.
+     * Contains all relevant information about a location including its name,
+     * coordinates, type, and contact information.
      */
     public static class PointOfInterest {
         private final String name;

@@ -10,6 +10,7 @@ import { getCurrentUser } from "./auth.js";
 // MAIN: EDIT TRIP
 //=============================================
 
+// This function is called when the user clicks the edit trip button. It opens a modal with a form to edit the trip.
 export function openEditTripForm(trip, onSubmitCallback) {
     document.body.style.overflow = "hidden";
 
@@ -41,6 +42,7 @@ export function openEditTripForm(trip, onSubmitCallback) {
         onsubmit: "return false;"
     });
 
+    // Form inputs
     const title = createElement("input", { type: "text", className: "form-control", id: "tripTitle", value: trip.title || "", required: true });
     const destination = createElement("input", { type: "text", className: "form-control", id: "tripDestination", value: trip.destination || "", required: true });
     const startDate = createElement("input", { type: "date", className: "form-control", id: "tripStartDate", value: trip.startDate || "", required: true });
@@ -54,7 +56,7 @@ export function openEditTripForm(trip, onSubmitCallback) {
 
     const errorDiv = createElement("div", { className: "text-danger", style: "display:none;" });
 
-    // Footer
+    // Footer. This is where the cancel and save buttons are.
     const footer = createElement("div", { className: "modal-footer" },
         createElement("button", { 
             type: "button", 
@@ -68,6 +70,7 @@ export function openEditTripForm(trip, onSubmitCallback) {
         }, "Save")
     );
 
+    // This is where the form inputs are added to the form.
     form.append(
         createFormGroup("Trip Title", title),
         createFormGroup("Destination", destination),
@@ -84,11 +87,11 @@ export function openEditTripForm(trip, onSubmitCallback) {
     modal.appendChild(dialog);
     document.body.appendChild(modal);
 
-    // Bootstrap modal instance
+    // Bootstrap modal instance. This is used to show the modal.
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 
-    // Form submission handler
+    // Form submission handler. This is where the form is submitted.
     form.onsubmit = async (e) => {
         e.preventDefault();
         console.log("Form submitted");
@@ -162,6 +165,8 @@ export function openEditTripForm(trip, onSubmitCallback) {
     });
 }
 
+// This function is called when the user clicks the add buddies button. 
+// It opens a modal with a form to select buddies for the trip.
 export async function openBuddiesModal(trip, onSubmitCallback) {
     document.body.style.overflow = "hidden";
     const currentUser = getCurrentUser();
@@ -191,7 +196,7 @@ export async function openBuddiesModal(trip, onSubmitCallback) {
     const buddyBody = createElement("div", { className: "modal-body" });
     const buddyForm = createElement("form", { className: "d-flex flex-column gap-2" });
 
-    // List of checkboxes
+    // List of checkboxes. This is where the buddies are listed and the user can select them.
     buddies.forEach(buddy => {
         const checkbox = createElement("input", {
             type: "checkbox",
@@ -292,6 +297,8 @@ export async function openBuddiesModal(trip, onSubmitCallback) {
 // HELPER FUNCTIONS
 //=============================================
 
+// This function is used to create a form group. It is used to create a group of inputs.
+// It is used in the openEditTripForm and openBuddiesModal functions.
 function createFormGroup(labelText, inputElement) {
     return createElement("div", { className: "mb-3" },
         createElement("label", { className: "form-label" }, labelText),

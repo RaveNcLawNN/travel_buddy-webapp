@@ -53,6 +53,7 @@ export async function loadTripDetail(id) {
   //=============================================
   // CHECK USER PERMISSION
   //=============================================
+  // This is where the user is checked if they are the organizer or a participant of the trip.
   const currentUser = getCurrentUser();
   const isOrganizer = trip.organizerId && currentUser && trip.organizerId === currentUser.id;
   const isParticipant = (trip.participantUsernames || []).includes(currentUser?.username);
@@ -98,7 +99,7 @@ export async function loadTripDetail(id) {
   //=============================================
   // BUDDIES SECTION
   //=============================================
-
+  // This is where the buddies are rendered.
   const buddiesSection = renderBuddiesSection(trip, currentUser, () => loadTripDetail(trip.id));
   infoPanel.appendChild(buddiesSection);
 
@@ -112,7 +113,7 @@ export async function loadTripDetail(id) {
   //=============================================
   // LOCATION PANEL
   //=============================================
-
+  
   const locationPanel = createElement("div", { className: "trip-detail-locations" },
     createElement("div", { className: "form-check mb-2" },
       createElement("input", { className: "form-check-input", type: "checkbox", id: "showLocationsCheckbox", checked: true }),
@@ -167,7 +168,7 @@ export async function loadTripDetail(id) {
   //=============================================
   // EVENT LISTENERS
   //=============================================
-
+  
   document.getElementById("editTripBtn").onclick = () => {
     openEditTripForm(trip, async () => loadTripDetail(trip.id));
   };
@@ -201,6 +202,7 @@ export async function loadTripDetail(id) {
     descriptionTextarea.focus();
   };
 
+  // This is where the description is saved. It is called when the user clicks the save button.
   saveDescriptionBtn.onclick = async () => {
     const newText = descriptionTextarea.value.trim();
     try {
@@ -209,6 +211,7 @@ export async function loadTripDetail(id) {
         ...trip,
         description: newText
       };
+      // We update the trip with the new description
       await updateTrip(trip.id, updatedTrip);
       trip.description = newText;
       descriptionDisplay.textContent = newText || "No description available.";
@@ -295,6 +298,8 @@ export async function loadTripDetail(id) {
   // MAP
   //=============================================
 
+  // This function is used to initialize the map and add the location markers.
+  // It is called when the user loads the trip detail page.
   async function initMapWithLocations(locations) {
     if (window.tripDetailMap) window.tripDetailMap.remove();
 
@@ -389,6 +394,7 @@ export async function loadTripDetail(id) {
       const btn = e.popup._contentNode.querySelector(".btn-add-poi");
       if (!btn) return;
 
+      // This is where the user can add a POI to the trip when they click the add to trip button.
       btn.addEventListener("click", async () => {
         const payload = {
           name: decodeURIComponent(btn.dataset.name),
@@ -398,6 +404,7 @@ export async function loadTripDetail(id) {
           address: decodeURIComponent(btn.dataset.address)
         };
         try {
+          // We create a new location with the POI data using the createLocation function from api.js.
           await createLocation(trip.id, payload);
           await loadAndRenderLocations();
           map.closePopup();
@@ -418,6 +425,7 @@ export async function loadTripDetail(id) {
 // RENDER BUDDIES SECTION
 //=============================================
 
+// This function is used to render the buddies section. It is called when the user loads the trip detail page.
 function renderBuddiesSection(trip, currentUser, onReload) {
   const section = createElement(
     "div",

@@ -63,15 +63,20 @@ public class TripController {
         }
     )
     @PostMapping
+    // This is where the trip is created. It is called by the createTrip function in the trips.js file.
+    // The JSON payload arrives as a TripDto object because of the RequestBody annotation.
+
     public ResponseEntity<?> createTrip(@Valid @RequestBody TripDto tripDto) {
+        // 1. We find the organizer of the trip by calling the findById method in the UserService class.
         Optional<User> organizerOpt = userService.findById(tripDto.getOrganizerId());
         if (organizerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Organizer not found");
         }
-
+        // 2. We convert the TripDto object to a Trip entity via the tripMapper class and the toEntity method.
         Trip trip = tripMapper.toEntity(tripDto);
         trip.setOrganizer(organizerOpt.get());
         trip.addParticipant(organizerOpt.get());
+        // 2.1. We add the organizer as a participant. If the organizer is not in the participants list, we add them.
         if (tripDto.getParticipantUsernames() != null) {
             Set<User> participants = tripDto.getParticipantUsernames().stream()
                 .map(username -> userRepository.findByUsername(username).orElse(null))
@@ -80,7 +85,10 @@ public class TripController {
             trip.getParticipants().addAll(participants);
         }
 
+        // 3. We save the trip to the database via the TripService class and the createTrip method.
+        // The TripService class also hands it over to TripRepository to be saved to the database.
         Trip savedTrip = tripService.createTrip(trip);
+        // 4. We return the trip to the client converted to a TripDto object via the tripMapper class and the toDto method.
         return ResponseEntity.status(HttpStatus.CREATED).body(tripMapper.toDto(savedTrip));
     }
 

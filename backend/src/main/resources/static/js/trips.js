@@ -10,6 +10,7 @@ import { isLoggedIn, getCurrentUser } from "./auth.js";
 // MAIN: VIEW RENDERER
 //=============================================
 
+// This function is called when the user clicks My Trips button in the navbar. It loads the trips and renders them.
 export async function loadTrips(page = 1) {
   const app = document.getElementById('app');
   if (!app) return;
@@ -49,6 +50,7 @@ export async function loadTrips(page = 1) {
         longitude: newTrip.longitude
       };
       try {
+        // We create a new trip with the payload with the createTrip function from api.js.
         await createTrip(payload);
         await refreshTripList();
       } catch (err) {
@@ -61,6 +63,8 @@ export async function loadTrips(page = 1) {
   // TRIP-CARD LIST RENDERER
   //=============================================
 
+  // This function is used to refresh the trip list. It is called when the user creates a new trip so that
+  // the new trip is added to the list.
   async function refreshTripList() {
     list.replaceChildren();
     let userTrips = [];
@@ -72,7 +76,7 @@ export async function loadTrips(page = 1) {
         getTripsByOrganizer(currentUser.id),
         getTripsByParticipant(currentUser.id)
       ]);
-      // Merge and deduplicate by trip id
+      // Merge and deduplicate by trip id. This is done to avoid duplicate trips.
       const allTrips = [...organized, ...participating];
       const seen = new Set();
       userTrips = allTrips.filter(trip => {
@@ -159,7 +163,8 @@ export async function loadTrips(page = 1) {
       createElement("input", { type: "text", className: "form-control", id: "tripDestination", required: true })
     );
 
-    // Add small map for destination
+    // Add small map for destination. This is where the map is displayed
+    // once the user starts typing in the destination input field.
     const mapDiv = createElement('div', { id: 'createTripMap', style: 'height: 200px; width: 100%; margin-bottom: 1rem; display: none;' });
     body.appendChild(mapDiv);
     let createTripMap, createTripMarker, selectedLat, selectedLon;
